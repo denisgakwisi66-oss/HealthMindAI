@@ -9,7 +9,7 @@ import AuthService from '/js/services/auth.js';
 import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
-import Toast from '/js/components/toast.js';
+import Toast from '/js/toast.js';
 
 const Appointments = (() => {
   // ===== STATE =====
@@ -566,13 +566,5 @@ const Appointments = (() => {
     closeBookingModal,
   };
 })();
-
-// ===== START =====
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => Appointments.init());
-} else {
-  Appointments.init();
-}
 
 export default Appointments;

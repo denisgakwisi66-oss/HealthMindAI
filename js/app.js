@@ -13,7 +13,7 @@ import Theme from './theme.js';
 import Performance from './performance.js';
 import Security from './security.js';
 import Accessibility from './accessibility.js';
-import Toast from './components/toast.js';
+import Toast from './toast.js';
 
 // ===== APP STATE =====
 
@@ -53,7 +53,14 @@ const App = (() => {
     const role = isAuthenticated ? AuthService.getRole() : 'public';
 
         // Guard protected pages — redirect unauthenticated users to login.
-    const publicPages = ['/', '/index.html', '/login.html', '/register.html', '/forgot-password.html'];
+    const publicPages = [
+      '/',
+      '/index.html',
+      '/login.html',
+      '/register.html',
+      '/forgot-password.html',
+      '/reset-password.html',
+    ];
     if (!isAuthenticated && !publicPages.includes(window.location.pathname)) {
       window.location.href = '/login.html';
       return;
@@ -109,20 +116,24 @@ const App = (() => {
     // Performance-measured page loading
     Performance.measureAsync('Page Setup', async () => {
       const pages = {
-        'dashboard': './pages/dashboard.js',
-        'ai-assistant': './pages/ai-assistant.js',
-        'appointments': './pages/appointments.js',
-        'medical-records': './pages/medical-records.js',
-        'medications': './pages/medications.js',
-        'notifications': './pages/notifications.js',
-        'emergency': './pages/emergency.js',
-        'profile': './pages/profile.js',
-        'settings': './pages/settings.js',
         'doctor-dashboard': './pages/doctor-dashboard.js',
-        'patients': './pages/patients.js',
         'admin-dashboard': './pages/admin-dashboard.js',
-        'users': './pages/users.js',
+        'ai-assistant': './pages/ai-assistant.js',
+        'medical-records': './pages/medical-records.js',
+        'forgot-password': './pages/forgot-password.js',
+        'reset-password': './pages/reset-password.js',
+        'appointments': './pages/appointments.js',
+        'notifications': './pages/notifications.js',
+        'medications': './pages/medications.js',
+        'dashboard': './pages/dashboard.js',
+        'emergency': './pages/emergency.js',
+        'settings': './pages/settings.js',
+        'patients': './pages/patients.js',
+        'profile': './pages/profile.js',
+        'register': './pages/register.js',
         'analytics': './pages/analytics.js',
+        'users': './pages/users.js',
+        'login': './pages/login.js',
       };
 
       for (const [key, path] of Object.entries(pages)) {

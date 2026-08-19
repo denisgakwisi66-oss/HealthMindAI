@@ -19,10 +19,4 @@ const MedicalRecords = (() => {
   return { init };
 })();
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => MedicalRecords.init());
-} else {
-  MedicalRecords.init();
-}
-
 export default MedicalRecords;

@@ -19,10 +19,4 @@ const Patients = (() => {
   return { init };
 })();
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => Patients.init());
-} else {
-  Patients.init();
-}
-
 export default Patients;

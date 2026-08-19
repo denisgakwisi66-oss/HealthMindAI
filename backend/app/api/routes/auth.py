@@ -31,6 +31,7 @@ from app.core.security import (
     verify_password,
 )
 from app.models.patient import Patient
+from app.models.doctor import Doctor
 from app.models.password_reset import PasswordResetToken
 from app.models.token import RefreshToken
 from app.models.user import User, UserRole
@@ -65,9 +66,9 @@ class RegisterRequest(BaseModel):
     @field_validator('role')
     @classmethod
     def restrict_public_role(cls, value: UserRole) -> UserRole:
-        # Public self-registration must never create privileged accounts.
-        if value in (UserRole.DOCTOR, UserRole.ADMIN):
-            raise ValueError('Self-registration with a privileged role is not allowed.')
+        # Public self-registration must never create admin accounts.
+        if value == UserRole.ADMIN:
+            raise ValueError('Self-registration as an admin is not allowed.')
         return value
 
 
@@ -183,6 +184,10 @@ async def register(data: RegisterRequest, request: Request, db: AsyncSession = D
         await db.flush()
         if data.role == UserRole.PATIENT:
             db.add(Patient(user_id=user.id))
+        elif data.role == UserRole.DOCTOR:
+            # Create a minimal doctor profile so the dashboard and scheduling
+            # features have a valid linked doctor record immediately after signup.
+            db.add(Doctor(user_id=user.id, specialty='General Practice'))
         await db.commit()
     except Exception:
         await db.rollback()

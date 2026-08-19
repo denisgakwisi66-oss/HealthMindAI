@@ -9,6 +9,14 @@
     min-height: 100vh;
     min-height: 100dvh;
   }
+
+  .app-container-public {
+    display: block;
+  }
+
+  .app-container-public .main-content {
+    margin-left: 0 !important;
+  }
   
   /* ===== SIDEBAR ===== */
   
@@ -272,6 +280,16 @@
     gap: var(--spacing-4);
     width: 100%;
   }
+
+.public-header .sidebar-brand {
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.public-header .sidebar-brand-text {
+  overflow: visible;
+  text-overflow: clip;
+}
 
   .public-nav {
     display: flex;

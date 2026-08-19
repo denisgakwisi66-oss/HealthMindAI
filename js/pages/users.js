@@ -19,10 +19,4 @@ const Users = (() => {
   return { init };
 })();
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => Users.init());
-} else {
-  Users.init();
-}
-
 export default Users;

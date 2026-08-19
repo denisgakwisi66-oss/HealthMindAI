@@ -37,6 +37,7 @@ const Navigation = (() => {
       { path: '/medical-records.html', label: 'Patient Records', icon: '📋', section: 'Main' },
       { path: '/ai-assistant.html', label: 'AI Assistant', icon: '🤖', section: 'Main' },
       { path: '/notifications.html', label: 'Notifications', icon: '🔔', section: 'Management' },
+      { path: '/emergency.html', label: 'Emergency', icon: '🚨', section: 'Management' },
       { path: '/profile.html', label: 'Profile', icon: '👤', section: 'Account' },
       { path: '/settings.html', label: 'Settings', icon: '⚙️', section: 'Account' },
     ],
@@ -47,6 +48,7 @@ const Navigation = (() => {
       { path: '/appointments.html', label: 'Appointments', icon: '📅', section: 'Management' },
       { path: '/analytics.html', label: 'Analytics', icon: '📈', section: 'Management' },
       { path: '/notifications.html', label: 'Notifications', icon: '🔔', section: 'Management' },
+      { path: '/emergency.html', label: 'Emergency', icon: '🚨', section: 'Management' },
       { path: '/settings.html', label: 'Settings', icon: '⚙️', section: 'Account' },
     ],
     
@@ -198,7 +200,7 @@ const Navigation = (() => {
       logoutBtn.addEventListener('click', async () => {
         if (confirm('Are you sure you want to log out?')) {
           try {
-            const { AuthService } = await import('/js/services/auth.js');
+            const { default: AuthService } = await import('/js/services/auth.js');
             await AuthService.logout();
             window.location.href = '/login.html';
           } catch (error) {

@@ -9,7 +9,7 @@ import AuthService from '/js/services/auth.js';
 import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
-import Toast from '/js/components/toast.js';
+import Toast from '/js/toast.js';
 
 const Notifications = (() => {
   // ===== STATE =====
@@ -313,13 +313,5 @@ const Notifications = (() => {
     clearAll,
   };
 })();
-
-// ===== START =====
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => Notifications.init());
-} else {
-  Notifications.init();
-}
 
 export default Notifications;

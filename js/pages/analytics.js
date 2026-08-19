@@ -19,10 +19,4 @@ const Analytics = (() => {
   return { init };
 })();
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => Analytics.init());
-} else {
-  Analytics.init();
-}
-
 export default Analytics;

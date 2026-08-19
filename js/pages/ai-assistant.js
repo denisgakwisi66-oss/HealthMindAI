@@ -1169,15 +1169,4 @@ const AIAssistant = (() => {
     };
 })();
 
-// =============================================================================
-// START
-// =============================================================================
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        AIAssistant.init();
-    });
-} else {
-    AIAssistant.init();
-}
-
 export default AIAssistant;

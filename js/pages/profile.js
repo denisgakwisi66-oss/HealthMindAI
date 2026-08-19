@@ -19,10 +19,4 @@ const Profile = (() => {
   return { init };
 })();
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => Profile.init());
-} else {
-  Profile.init();
-}
-
 export default Profile;

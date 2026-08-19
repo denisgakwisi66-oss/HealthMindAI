@@ -19,10 +19,4 @@ const Settings = (() => {
   return { init };
 })();
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => Settings.init());
-} else {
-  Settings.init();
-}
-
 export default Settings;

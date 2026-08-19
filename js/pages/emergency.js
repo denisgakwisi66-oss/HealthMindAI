@@ -11,7 +11,7 @@ import AuthService from '/js/services/auth.js';
 import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
-import Toast from '/js/components/toast.js';
+import Toast from '/js/toast.js';
 
 const CONTACTS_KEY = 'healthmind_emergency_contacts';
 
@@ -337,11 +337,5 @@ const Emergency = (() => {
 
   return { init };
 })();
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => Emergency.init());
-} else {
-  Emergency.init();
-}
 
 export default Emergency;
