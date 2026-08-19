@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Medical Records — HealthMind AI</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/records.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <div id="loading-overlay" class="loading-overlay" style="display: flex;">
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div class="spinner spinner-lg"></div>
+      <p class="text-secondary">Loading medical records...</p>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation"></aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <main id="main-content" class="main-content">
+      <header class="page-header">
+        <div class="flex items-center gap-3">
+          <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <h1 class="page-header-title">📋 Medical Records</h1>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary btn-sm" id="upload-record-btn">
+            <span>📤</span> Upload Record
+          </button>
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="page-content" class="page-content">
+        <!-- Tabs -->
+        <div class="record-tabs" role="tablist">
+          <button class="record-tab active" data-tab="all">All Records</button>
+          <button class="record-tab" data-tab="history">Medical History</button>
+          <button class="record-tab" data-tab="lab-results">Lab Results</button>
+          <button class="record-tab" data-tab="documents">Documents</button>
+        </div>
+
+        <!-- Search -->
+        <div class="record-search">
+          <input type="text" id="record-search" placeholder="Search records..." class="input-field">
+          <select id="record-type-filter" class="input-field" style="width: auto; min-width: 140px;">
+            <option value="all">All Types</option>
+            <option value="history">Medical History</option>
+            <option value="lab">Lab Results</option>
+            <option value="document">Document</option>
+          </select>
+        </div>
+
+        <!-- Records List -->
+        <div id="records-list" class="records-list">
+          <div class="loading-state">
+            <div class="spinner spinner-sm"></div>
+            <span>Loading records...</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" class="bottom-nav"></nav>
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Upload Modal -->
+  <div id="upload-modal" class="modal-overlay">
+    <div class="modal">
+      <button class="modal-close" aria-label="Close modal">&times;</button>
+      <div class="modal-header">
+        <h3 class="modal-title">Upload Medical Record</h3>
+      </div>
+      <div class="modal-body">
+        <form id="upload-form" enctype="multipart/form-data">
+          <div class="input-group">
+            <label class="input-label">Record Type <span class="required">*</span></label>
+            <select id="upload-type" class="input-field" required>
+              <option value="">Select type...</option>
+              <option value="history">Medical History</option>
+              <option value="lab">Lab Results</option>
+              <option value="document">Document</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Title <span class="required">*</span></label>
+            <input type="text" id="upload-title" class="input-field" placeholder="e.g., Blood Test Results" required>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Date</label>
+            <input type="date" id="upload-date" class="input-field">
+          </div>
+          <div class="input-group">
+            <label class="input-label">File <span class="required">*</span></label>
+            <div class="file-drop-zone" id="file-drop-zone">
+              <div style="text-align: center; padding: var(--spacing-6);">
+                <div style="font-size: 48px; margin-bottom: var(--spacing-2);">📄</div>
+                <p>Drag & drop your file here, or click to browse</p>
+                <p style="font-size: var(--font-size-sm); color: var(--color-text-tertiary);">
+                  Supported: PDF, JPG, PNG, DOC, DOCX (Max 10MB)
+                </p>
+              </div>
+              <input type="file" id="upload-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display: none;">
+            </div>
+            <div id="file-info" style="display: none; padding: var(--spacing-2); background: var(--color-surface-hover); border-radius: var(--radius-md); margin-top: var(--spacing-2);">
+              <span id="file-name"></span>
+              <span id="file-size" style="font-size: var(--font-size-sm); color: var(--color-text-tertiary);"></span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="upload-cancel">Cancel</button>
+        <button class="btn btn-primary" id="upload-confirm">Upload</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/pages/medical-records.js"></script>
+</body>
+</html>

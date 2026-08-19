@@ -1,0 +1,140 @@
+/* ============================================
+   HEALTHMIND AI — MEDICATIONS STYLES
+   ============================================ */
+
+.adherence-summary {
+  margin-bottom: var(--spacing-6);
+}
+
+.adherence-ring {
+  flex-shrink: 0;
+}
+
+.medications-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* Medication Card */
+.medication-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.medication-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.medication-card .med-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-md);
+}
+
+.medication-card .med-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.medication-card .med-info .med-name {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+}
+
+.medication-card .med-info .med-details {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  display: flex;
+  gap: var(--spacing-4);
+  flex-wrap: wrap;
+}
+
+/* Dosage Schedule */
+.medication-card .med-schedule {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+  margin-top: var(--spacing-2);
+}
+
+.medication-card .med-schedule .dose-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.medication-card .med-schedule .dose-dot.taken {
+  background: var(--color-success);
+  color: white;
+}
+
+.medication-card .med-schedule .dose-dot.upcoming {
+  background: var(--color-primary);
+  color: white;
+}
+
+.medication-card .med-schedule .dose-dot.missed {
+  background: var(--color-danger);
+  color: white;
+}
+
+.medication-card .med-status {
+  flex-shrink: 0;
+}
+
+.medication-card .med-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .medication-card {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .medication-card .med-schedule {
+    justify-content: center;
+  }
+
+  .medication-card .med-actions {
+    justify-content: center;
+  }
+
+  .medication-card .med-details {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .medication-card .med-schedule .dose-dot {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+}

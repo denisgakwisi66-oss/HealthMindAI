@@ -1,0 +1,199 @@
+/* ============================================
+   HEALTHMIND AI — DESIGN SYSTEM VARIABLES
+   ============================================ */
+
+   :root {
+    /* ===== COLOR SYSTEM ===== */
+    
+    /* Primary Colors */
+    --color-primary: #2563EB;
+    --color-primary-light: #3B82F6;
+    --color-primary-dark: #1D4ED8;
+    --color-primary-surface: #EFF6FF;
+    --color-primary-gradient: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+    
+    /* Secondary Colors */
+    --color-secondary: #06B6D4;
+    --color-secondary-light: #22D3EE;
+    --color-secondary-dark: #0891B2;
+    --color-secondary-surface: #ECFEFF;
+    
+    /* Semantic Colors */
+    --color-success: #10B981;
+    --color-success-light: #34D399;
+    --color-success-dark: #059669;
+    --color-success-surface: #ECFDF5;
+    
+    --color-warning: #F59E0B;
+    --color-warning-light: #FBBF24;
+    --color-warning-dark: #D97706;
+    --color-warning-surface: #FFFBEB;
+    
+    --color-danger: #EF4444;
+    --color-danger-light: #F87171;
+    --color-danger-dark: #DC2626;
+    --color-danger-surface: #FEF2F2;
+    
+    --color-info: #3B82F6;
+    --color-info-surface: #EFF6FF;
+    
+    /* AI Accent */
+    --color-ai: #7C3AED;
+    --color-ai-light: #8B5CF6;
+    --color-ai-dark: #6D28D9;
+    --color-ai-surface: #F5F3FF;
+    
+    /* Neutral Colors */
+    --color-background: #F6F9FC;
+    --color-surface: #FFFFFF;
+    --color-surface-hover: #F8FAFC;
+    --color-surface-border: #E2E8F0;
+    
+    --color-text: #0F172A;
+    --color-text-secondary: #64748B;
+    --color-text-tertiary: #94A3B8;
+    --color-text-inverse: #FFFFFF;
+    
+    --color-border: #E2E8F0;
+    --color-border-light: #F1F5F9;
+    --color-divider: #E2E8F0;
+    
+    --color-shadow: rgba(15, 23, 42, 0.08);
+    --color-shadow-heavy: rgba(15, 23, 42, 0.16);
+    
+    /* ===== TYPOGRAPHY ===== */
+    
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family-mono: 'SF Mono', 'Fira Code', monospace;
+    
+    /* Font Sizes - Fluid */
+    --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+    --font-size-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+    --font-size-base: clamp(1rem, 0.925rem + 0.375vw, 1.125rem);
+    --font-size-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+    --font-size-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+    --font-size-2xl: clamp(1.5rem, 1.3rem + 1vw, 1.875rem);
+    --font-size-3xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.25rem);
+    --font-size-4xl: clamp(2.25rem, 1.9rem + 1.75vw, 3rem);
+    --font-size-5xl: clamp(3rem, 2.5rem + 2.5vw, 4rem);
+    
+    /* Font Weights */
+    --font-weight-light: 300;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+    
+    /* Line Heights */
+    --line-height-tight: 1.1;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.7;
+    --line-height-loose: 2;
+    
+    /* Letter Spacing */
+    --letter-spacing-tight: -0.025em;
+    --letter-spacing-normal: 0;
+    --letter-spacing-wide: 0.025em;
+    
+    /* ===== SPACING ===== */
+    
+    --spacing-0: 0;
+    --spacing-1: 0.25rem;
+    --spacing-2: 0.5rem;
+    --spacing-3: 0.75rem;
+    --spacing-4: 1rem;
+    --spacing-5: 1.25rem;
+    --spacing-6: 1.5rem;
+    --spacing-8: 2rem;
+    --spacing-10: 2.5rem;
+    --spacing-12: 3rem;
+    --spacing-16: 4rem;
+    --spacing-20: 5rem;
+    --spacing-24: 6rem;
+    
+    /* ===== BORDER RADIUS ===== */
+    
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    --radius-full: 9999px;
+    
+    /* ===== SHADOWS ===== */
+    
+    --shadow-xs: 0 1px 2px var(--color-shadow);
+    --shadow-sm: 0 1px 3px var(--color-shadow), 0 1px 2px var(--color-shadow);
+    --shadow-md: 0 4px 6px -1px var(--color-shadow), 0 2px 4px -1px var(--color-shadow);
+    --shadow-lg: 0 10px 15px -3px var(--color-shadow), 0 4px 6px -2px var(--color-shadow);
+    --shadow-xl: 0 20px 25px -5px var(--color-shadow), 0 10px 10px -5px var(--color-shadow);
+    --shadow-2xl: 0 25px 50px -12px var(--color-shadow-heavy);
+    
+    /* ===== TRANSITIONS ===== */
+    
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-extra-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* ===== LAYOUT ===== */
+    
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 72px;
+    --header-height: 64px;
+    --bottom-nav-height: 72px;
+    --max-content-width: 1280px;
+    
+    /* ===== Z-INDEX STACK ===== */
+    
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-modal-overlay: 400;
+    --z-modal: 500;
+    --z-toast: 600;
+    --z-loading: 700;
+    --z-sidebar: 50;
+  }
+  
+  /* ============================================
+     DARK THEME VARIABLES
+     ============================================ */
+  
+  [data-theme="dark"] {
+    --color-background: #0F172A;
+    --color-surface: #1E293B;
+    --color-surface-hover: #334155;
+    --color-surface-border: #334155;
+    
+    --color-text: #F8FAFC;
+    --color-text-secondary: #94A3B8;
+    --color-text-tertiary: #64748B;
+    
+    --color-border: #334155;
+    --color-border-light: #1E293B;
+    --color-divider: #334155;
+    
+    --color-shadow: rgba(0, 0, 0, 0.3);
+    --color-shadow-heavy: rgba(0, 0, 0, 0.5);
+    
+    --color-primary-surface: #1E3A5F;
+    --color-secondary-surface: #1A3A4A;
+    --color-success-surface: #1A3A2A;
+    --color-warning-surface: #3A2A1A;
+    --color-danger-surface: #3A1A1A;
+    --color-ai-surface: #2A1A3A;
+  }
+  
+  /* ============================================
+     RESPONSIVE BREAKPOINTS
+     ============================================ */
+  
+  /* Mobile Small: 320px - 374px */
+  /* Mobile: 375px - 479px */
+  /* Mobile Large: 480px - 639px */
+  /* Tablet: 640px - 767px */
+  /* Tablet Large: 768px - 1023px */
+  /* Desktop: 1024px - 1279px */
+  /* Desktop Large: 1280px - 1535px */
+  /* Desktop XL: 1536px+ */

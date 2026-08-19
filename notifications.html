@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Notifications — HealthMind AI</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/notifications.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <div id="loading-overlay" class="loading-overlay" style="display: flex;">
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div class="spinner spinner-lg"></div>
+      <p class="text-secondary">Loading notifications...</p>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation"></aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <main id="main-content" class="main-content">
+      <header class="page-header">
+        <div class="flex items-center gap-3">
+          <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <h1 class="page-header-title">🔔 Notifications</h1>
+          <span class="badge badge-danger" id="unread-badge">0</span>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-sm btn-outline" id="mark-all-read">Mark All Read</button>
+          <button class="btn btn-sm btn-ghost" id="clear-all">Clear All</button>
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="page-content" class="page-content">
+        <!-- Filters -->
+        <div class="notification-filters">
+          <div class="filter-group">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="unread">Unread</button>
+            <button class="filter-btn" data-filter="appointments">📅 Appointments</button>
+            <button class="filter-btn" data-filter="medications">💊 Medications</button>
+            <button class="filter-btn" data-filter="system">⚙️ System</button>
+          </div>
+        </div>
+
+        <!-- Notification List -->
+        <div id="notifications-list" class="notifications-list">
+          <div class="loading-state">
+            <div class="spinner spinner-sm"></div>
+            <span>Loading notifications...</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" class="bottom-nav" role="navigation" aria-label="Mobile navigation"></nav>
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="/js/pages/notifications.js"></script>
+</body>
+</html>

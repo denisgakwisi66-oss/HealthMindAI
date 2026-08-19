@@ -1,0 +1,176 @@
+/* ============================================
+   HEALTHMIND AI — DOCTOR PORTAL STYLES
+   ============================================ */
+
+.doctor-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+.stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  transition: all var(--transition-base);
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.stat-card .stat-icon {
+  font-size: 32px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-md);
+}
+
+.stat-card .stat-info {
+  flex: 1;
+}
+
+.stat-card .stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.stat-card .stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Schedule Items */
+.schedule-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-3);
+  border-bottom: 1px solid var(--color-border-light);
+  transition: all var(--transition-fast);
+}
+
+.schedule-item:hover {
+  background: var(--color-surface-hover);
+}
+
+.schedule-item .schedule-time {
+  min-width: 80px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+.schedule-item .schedule-patient {
+  flex: 1;
+}
+
+.schedule-item .schedule-patient .patient-name {
+  font-weight: var(--font-weight-medium);
+}
+
+.schedule-item .schedule-patient .patient-details {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.schedule-item .schedule-status {
+  flex-shrink: 0;
+}
+
+.schedule-item .schedule-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+}
+
+/* Patient List */
+.patient-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-3);
+  border-bottom: 1px solid var(--color-border-light);
+  transition: all var(--transition-fast);
+}
+
+.patient-item:hover {
+  background: var(--color-surface-hover);
+}
+
+.patient-item .patient-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.patient-item .patient-info {
+  flex: 1;
+}
+
+.patient-item .patient-info .patient-name {
+  font-weight: var(--font-weight-medium);
+}
+
+.patient-item .patient-info .patient-meta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.patient-item .patient-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .doctor-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .schedule-item {
+    flex-wrap: wrap;
+  }
+
+  .schedule-item .schedule-time {
+    min-width: auto;
+  }
+
+  .schedule-item .schedule-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .patient-item {
+    flex-wrap: wrap;
+  }
+
+  .patient-item .patient-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .doctor-stats {
+    grid-template-columns: 1fr;
+  }
+}

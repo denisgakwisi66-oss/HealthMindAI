@@ -1,0 +1,29 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+.env.local
+.env.*.local
+.DS_Store
+.alembic/
+/alembic/versions/
+# Local SQLite database (created automatically by the app / seed.py)
+*.db
+*.db-journal
+
+# --- Debug / scratch artifacts (not part of the app) ---
+*.log
+out.txt
+rep.txt
+debug_*.py
+_open*.txt
+_opened*.txt
+/e2e.py
+/_e2e.py
+/_repro*.py
+/_sostest.py
+/_verify.py
+_e2e_out.txt
+_pytest_out.txt

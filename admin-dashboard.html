@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Admin Dashboard — HealthMind AI</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/admin.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <div id="loading-overlay" class="loading-overlay" style="display: flex;">
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div class="spinner spinner-lg"></div>
+      <p class="text-secondary">Loading admin dashboard...</p>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation"></aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <main id="main-content" class="main-content">
+      <header class="page-header">
+        <div class="flex items-center gap-3">
+          <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <h1 class="page-header-title">📊 Admin Dashboard</h1>
+        </div>
+        <div class="page-header-actions">
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="page-content" class="page-content">
+        <!-- Stats -->
+        <div class="admin-stats">
+          <div class="stat-card">
+            <div class="stat-icon">👤</div>
+            <div class="stat-info">
+              <div class="stat-value" id="admin-total-users">0</div>
+              <div class="stat-label">Total Users</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👨‍⚕️</div>
+            <div class="stat-info">
+              <div class="stat-value" id="admin-total-doctors">0</div>
+              <div class="stat-label">Doctors</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🏥</div>
+            <div class="stat-info">
+              <div class="stat-value" id="admin-total-hospitals">0</div>
+              <div class="stat-label">Hospitals</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-info">
+              <div class="stat-value" id="admin-total-appointments">0</div>
+              <div class="stat-label">Appointments</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🔄 Recent Activity</h3>
+          </div>
+          <div id="recent-activity">
+            <div class="loading-state">
+              <div class="spinner spinner-sm"></div>
+              <span>Loading activity...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" class="bottom-nav" role="navigation" aria-label="Mobile navigation"></nav>
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="/js/pages/admin-dashboard.js"></script>
+</body>
+</html>

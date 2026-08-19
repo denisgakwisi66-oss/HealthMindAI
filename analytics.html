@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Analytics — HealthMind AI Admin</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/admin.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <div id="loading-overlay" class="loading-overlay" style="display: flex;">
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div class="spinner spinner-lg"></div>
+      <p class="text-secondary">Loading analytics...</p>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation"></aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <main id="main-content" class="main-content">
+      <header class="page-header">
+        <div class="flex items-center gap-3">
+          <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <h1 class="page-header-title">📈 Analytics</h1>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-outline btn-sm" id="export-data">📥 Export</button>
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="page-content" class="page-content">
+        <!-- Date Range -->
+        <div class="analytics-filters">
+          <div class="filter-group">
+            <label class="input-label" style="margin-bottom: 0;">From:</label>
+            <input type="date" id="analytics-from" class="input-field" style="width: auto;">
+            <label class="input-label" style="margin-bottom: 0;">To:</label>
+            <input type="date" id="analytics-to" class="input-field" style="width: auto;">
+            <button class="btn btn-primary" id="apply-analytics">Apply</button>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="analytics-grid">
+          <div class="card">
+            <h4>User Growth</h4>
+            <div id="user-growth-chart" style="height: 200px;">
+              <div class="loading-state">
+                <div class="spinner spinner-sm"></div>
+                <span>Loading chart...</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4>Appointment Trends</h4>
+            <div id="appointment-trends-chart" style="height: 200px;">
+              <div class="loading-state">
+                <div class="spinner spinner-sm"></div>
+                <span>Loading chart...</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4>User Role Distribution</h4>
+            <div id="user-role-chart" style="height: 200px;">
+              <div class="loading-state">
+                <div class="spinner spinner-sm"></div>
+                <span>Loading chart...</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4>Medication Adherence</h4>
+            <div id="adherence-chart" style="height: 200px;">
+              <div class="loading-state">
+                <div class="spinner spinner-sm"></div>
+                <span>Loading chart...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" class="bottom-nav" role="navigation" aria-label="Mobile navigation"></nav>
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="/js/pages/analytics.js"></script>
+</body>
+</html>

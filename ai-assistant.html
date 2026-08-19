@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>AI Assistant — HealthMind AI</title>
+  <meta name="description" content="Your AI-powered health assistant">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/ai-assistant.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay" style="display: flex;">
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div class="spinner spinner-lg"></div>
+      <p class="text-secondary">Loading AI Assistant...</p>
+    </div>
+  </div>
+
+  <!-- App Container -->
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation"></aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main id="main-content" class="main-content ai-assistant-layout">
+      <!-- Page Header -->
+      <header class="page-header ai-header">
+        <div class="flex items-center gap-3">
+          <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <div class="flex items-center gap-2">
+            <span style="font-size: 24px;">🤖</span>
+            <h1 class="page-header-title">HealthMind AI</h1>
+            <span class="badge badge-ai" style="margin-left: var(--spacing-2);">Online</span>
+          </div>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-ghost btn-sm" id="new-chat-btn" aria-label="New conversation">
+            <span role="img" aria-hidden="true">➕</span> New Chat
+          </button>
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- AI Assistant Content -->
+      <div class="ai-container">
+        <!-- Conversations Sidebar -->
+        <aside class="conversations-sidebar" id="conversations-sidebar">
+          <div class="conversations-header">
+            <h3>Conversations</h3>
+            <button class="btn btn-primary btn-sm" id="new-chat-sidebar">New Chat</button>
+          </div>
+          
+          <!-- Search -->
+          <div class="conversations-search">
+            <input type="text" id="conversation-search" placeholder="Search conversations..." class="input-field" style="padding-left: var(--spacing-10);">
+            <span style="position: absolute; left: var(--spacing-3); top: 50%; transform: translateY(-50%); color: var(--color-text-tertiary);">🔍</span>
+          </div>
+
+          <!-- Conversation List -->
+          <div id="conversation-list" class="conversation-list">
+            <!-- Rendered by JavaScript -->
+            <div class="conversation-loading">
+              <div class="spinner spinner-sm"></div>
+              <span>Loading conversations...</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Chat Area -->
+        <div class="chat-area">
+          <!-- Chat Messages -->
+          <div id="chat-messages" class="chat-messages">
+            <!-- Welcome Message -->
+            <div class="welcome-message" id="welcome-message">
+              <div class="welcome-icon">🤖</div>
+              <h2>How can I help you today?</h2>
+              <p>Ask me about your health, appointments, medications, or anything else.</p>
+              
+              <!-- Suggested Prompts -->
+              <div class="suggested-prompts">
+                <button class="suggested-prompt" data-prompt="Help me prepare for my appointment.">
+                  📋 Help me prepare for my appointment.
+                </button>
+                <button class="suggested-prompt" data-prompt="Show my upcoming appointments.">
+                  📅 Show my upcoming appointments.
+                </button>
+                <button class="suggested-prompt" data-prompt="Help me understand my lab report.">
+                  🔬 Help me understand my lab report.
+                </button>
+                <button class="suggested-prompt" data-prompt="Remind me about my medication.">
+                  💊 Remind me about my medication.
+                </button>
+                <button class="suggested-prompt" data-prompt="Find a doctor near me.">
+                  🏥 Find a doctor near me.
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input Area -->
+          <div class="chat-input-area">
+            <div class="chat-input-wrapper">
+              <textarea 
+                id="chat-input" 
+                class="chat-input" 
+                placeholder="Type your message..." 
+                rows="1"
+                aria-label="Type your message"
+              ></textarea>
+              <button class="btn btn-primary" id="send-btn" aria-label="Send message">
+                <span style="font-size: 20px;">➤</span>
+              </button>
+            </div>
+            <div class="chat-input-footer">
+              <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary);">
+                HealthMind AI provides informational support. Always consult your healthcare provider.
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bottom Navigation (Mobile) -->
+  <nav id="bottom-nav" class="bottom-nav" role="navigation" aria-label="Mobile navigation"></nav>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Modals -->
+  <div id="action-modal" class="modal-overlay">
+    <div class="modal modal-lg">
+      <button class="modal-close" aria-label="Close modal">&times;</button>
+      <div class="modal-header">
+        <h3 class="modal-title" id="action-modal-title">AI Action Required</h3>
+      </div>
+      <div class="modal-body" id="action-modal-body">
+        <!-- Dynamic content -->
+      </div>
+      <div class="modal-footer" id="action-modal-footer">
+        <button class="btn btn-ghost" id="action-modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="action-modal-confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script type="module" src="/js/pages/ai-assistant.js"></script>
+</body>
+</html>

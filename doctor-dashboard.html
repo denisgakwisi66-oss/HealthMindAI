@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Doctor Dashboard — HealthMind AI</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/doctor.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <div id="loading-overlay" class="loading-overlay" style="display: flex;">
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div class="spinner spinner-lg"></div>
+      <p class="text-secondary">Loading doctor dashboard...</p>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation"></aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <main id="main-content" class="main-content">
+      <header class="page-header">
+        <div class="flex items-center gap-3">
+          <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <h1 class="page-header-title">👨‍⚕️ Doctor Dashboard</h1>
+        </div>
+        <div class="page-header-actions">
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="page-content" class="page-content">
+        <!-- Stats Row -->
+        <div class="doctor-stats">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+              <div class="stat-value" id="total-patients">0</div>
+              <div class="stat-label">Total Patients</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-info">
+              <div class="stat-value" id="today-appointments">0</div>
+              <div class="stat-label">Today's Appointments</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⏰</div>
+            <div class="stat-info">
+              <div class="stat-value" id="pending-appointments">0</div>
+              <div class="stat-label">Pending</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+              <div class="stat-value" id="completed-appointments">0</div>
+              <div class="stat-label">Completed Today</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today's Schedule -->
+        <div class="card" style="margin-bottom: var(--spacing-6);">
+          <div class="card-header">
+            <h3 class="card-title">📋 Today's Schedule</h3>
+            <span class="badge" id="schedule-date">Today</span>
+          </div>
+          <div id="today-schedule">
+            <div class="loading-state">
+              <div class="spinner spinner-sm"></div>
+              <span>Loading schedule...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Patients -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">👤 Recent Patients</h3>
+            <a href="/patients.html" style="font-size: var(--font-size-sm);">View All</a>
+          </div>
+          <div id="recent-patients">
+            <div class="loading-state">
+              <div class="spinner spinner-sm"></div>
+              <span>Loading patients...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" class="bottom-nav" role="navigation" aria-label="Mobile navigation"></nav>
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="/js/pages/doctor-dashboard.js"></script>
+</body>
+</html>

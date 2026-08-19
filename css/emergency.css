@@ -1,0 +1,199 @@
+/* ============================================
+   HEALTHMIND AI — EMERGENCY STYLES
+   ============================================ */
+
+.emergency-container {
+  min-height: 100vh;
+  background: var(--color-background);
+  padding: var(--spacing-4);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Emergency Header */
+.emergency-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-6);
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+}
+
+.emergency-header h1 {
+  font-size: var(--font-size-2xl);
+  margin: 0;
+  color: var(--color-danger);
+}
+
+.emergency-back {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.emergency-back:hover {
+  background: var(--color-surface-hover);
+}
+
+.emergency-status {
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-success);
+  color: white;
+}
+
+.emergency-status.triggered {
+  background: var(--color-danger);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* SOS Section */
+.sos-section {
+  text-align: center;
+  padding: var(--spacing-8) 0;
+}
+
+.sos-btn {
+  width: 200px;
+  height: 200px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--color-danger);
+  color: white;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-base);
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+}
+
+.sos-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 20px rgba(239, 68, 68, 0.1);
+}
+
+.sos-btn:active {
+  transform: scale(0.95);
+}
+
+.sos-btn .sos-text {
+  display: block;
+  font-size: 48px;
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: 4px;
+}
+
+.sos-btn .sos-subtext {
+  display: block;
+  font-size: var(--font-size-sm);
+  opacity: 0.8;
+  margin-top: var(--spacing-2);
+}
+
+.sos-btn.pulsing {
+  animation: sosPulse 1.5s ease-in-out infinite;
+}
+
+.sos-warning {
+  margin-top: var(--spacing-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Emergency Grid */
+.emergency-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-6);
+}
+
+.emergency-card {
+  padding: var(--spacing-6);
+}
+
+.emergency-card h3 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-4);
+  color: var(--color-text);
+}
+
+/* Emergency Contacts */
+.emergency-contact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-2) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.emergency-contact .contact-name {
+  font-weight: var(--font-weight-medium);
+}
+
+.emergency-contact .contact-phone {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+}
+
+.emergency-contact .contact-phone:hover {
+  text-decoration: underline;
+}
+
+/* Animations */
+@keyframes sosPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 40px rgba(239, 68, 68, 0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .emergency-container {
+    padding: var(--spacing-2);
+  }
+
+  .emergency-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .sos-btn {
+    width: 160px;
+    height: 160px;
+  }
+
+  .sos-btn .sos-text {
+    font-size: 36px;
+  }
+
+  .emergency-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .sos-btn {
+    width: 140px;
+    height: 140px;
+  }
+
+  .sos-btn .sos-text {
+    font-size: 28px;
+  }
+}

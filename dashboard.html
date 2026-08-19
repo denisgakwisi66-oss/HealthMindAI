@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Dashboard — HealthMind AI</title>
+  <meta name="description" content="Your personalized health dashboard">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay" style="display: flex;">
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div class="spinner spinner-lg"></div>
+      <p class="text-secondary">Loading your dashboard...</p>
+    </div>
+  </div>
+
+  <!-- App Container -->
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation"></aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main id="main-content" class="main-content">
+      <!-- Page Header -->
+      <header class="page-header">
+        <div class="flex items-center gap-3">
+          <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <h1 class="page-header-title">Dashboard</h1>
+        </div>
+        <div class="page-header-actions">
+          <button class="theme-toggle" aria-label="Toggle theme" style="margin-right: var(--spacing-2);">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+          <a href="/profile.html" class="btn btn-ghost btn-sm" aria-label="Profile">
+            <span role="img" aria-hidden="true">👤</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <div id="page-content" class="page-content">
+        <!-- Greeting Section -->
+        <section id="greeting-section" style="margin-bottom: var(--spacing-8);">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-3">
+                <h2 id="greeting-text" style="font-size: var(--font-size-2xl); margin: 0;">Good morning, <span id="user-name">User</span></h2>
+                <span id="greeting-emoji" style="font-size: 28px;">🌅</span>
+              </div>
+              <p style="color: var(--color-text-secondary); margin: var(--spacing-2) 0 0;">
+                How are you feeling today?
+              </p>
+            </div>
+            <a href="/ai-assistant.html" class="btn btn-ai">
+              🤖 Talk to HealthMind AI
+            </a>
+          </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section style="margin-bottom: var(--spacing-8);">
+          <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--spacing-3);">
+            <a href="/ai-assistant.html" class="card" style="text-align: center; padding: var(--spacing-4); text-decoration: none; transition: all var(--transition-fast); border-color: var(--color-ai);">
+              <div style="font-size: 28px; margin-bottom: var(--spacing-2);">🤖</div>
+              <div style="font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); color: var(--color-text);">Ask AI</div>
+            </a>
+            <a href="/appointments.html" class="card" style="text-align: center; padding: var(--spacing-4); text-decoration: none; transition: all var(--transition-fast);">
+              <div style="font-size: 28px; margin-bottom: var(--spacing-2);">📅</div>
+              <div style="font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); color: var(--color-text);">Book Appointment</div>
+            </a>
+            <a href="/medical-records.html" class="card" style="text-align: center; padding: var(--spacing-4); text-decoration: none; transition: all var(--transition-fast);">
+              <div style="font-size: 28px; margin-bottom: var(--spacing-2);">📋</div>
+              <div style="font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); color: var(--color-text);">View Records</div>
+            </a>
+            <a href="/medications.html" class="card" style="text-align: center; padding: var(--spacing-4); text-decoration: none; transition: all var(--transition-fast);">
+              <div style="font-size: 28px; margin-bottom: var(--spacing-2);">💊</div>
+              <div style="font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); color: var(--color-text);">Medications</div>
+            </a>
+            <a href="/emergency.html" class="card" style="text-align: center; padding: var(--spacing-4); text-decoration: none; transition: all var(--transition-fast); border-color: var(--color-danger);">
+              <div style="font-size: 28px; margin-bottom: var(--spacing-2);">🚨</div>
+              <div style="font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); color: var(--color-danger);">Emergency</div>
+            </a>
+          </div>
+        </section>
+
+        <!-- Health Overview -->
+        <div class="grid" style="grid-template-columns: 2fr 1fr; gap: var(--spacing-6); margin-bottom: var(--spacing-8);">
+          <!-- Health Metrics -->
+          <section>
+            <div class="card" style="padding: var(--spacing-6);">
+              <div class="card-header">
+                <h3 class="card-title">Health Overview</h3>
+                <span class="badge">Today</span>
+              </div>
+              <div id="health-metrics" class="grid" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--spacing-4);">
+                <!-- Skeleton loaders -->
+                <div class="skeleton skeleton-card" style="height: 80px;"></div>
+                <div class="skeleton skeleton-card" style="height: 80px;"></div>
+                <div class="skeleton skeleton-card" style="height: 80px;"></div>
+                <div class="skeleton skeleton-card" style="height: 80px;"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Upcoming Appointment -->
+          <section>
+            <div class="card" style="padding: var(--spacing-6);">
+              <div class="card-header">
+                <h3 class="card-title">Upcoming Appointment</h3>
+                <a href="/appointments.html" style="font-size: var(--font-size-sm);">View all</a>
+              </div>
+              <div id="upcoming-appointment">
+                <div class="skeleton skeleton-text" style="height: 60px;"></div>
+                <div class="skeleton skeleton-text" style="height: 40px;"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Second Row -->
+        <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-6); margin-bottom: var(--spacing-8);">
+          <!-- Medication Reminder -->
+          <section>
+            <div class="card" style="padding: var(--spacing-6);">
+              <div class="card-header">
+                <h3 class="card-title">💊 Medications</h3>
+                <a href="/medications.html" style="font-size: var(--font-size-sm);">View all</a>
+              </div>
+              <div id="medication-reminder">
+                <div class="skeleton skeleton-text" style="height: 50px;"></div>
+                <div class="skeleton skeleton-text" style="height: 30px;"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Notifications -->
+          <section>
+            <div class="card" style="padding: var(--spacing-6);">
+              <div class="card-header">
+                <h3 class="card-title">🔔 Notifications</h3>
+                <a href="/notifications.html" style="font-size: var(--font-size-sm);">View all</a>
+              </div>
+              <div id="notifications-list">
+                <div class="skeleton skeleton-text" style="height: 40px;"></div>
+                <div class="skeleton skeleton-text" style="height: 40px;"></div>
+                <div class="skeleton skeleton-text" style="height: 40px;"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Health Trends -->
+          <section>
+            <div class="card" style="padding: var(--spacing-6);">
+              <div class="card-header">
+                <h3 class="card-title">📈 Health Trends</h3>
+                <span class="badge">Last 7 days</span>
+              </div>
+              <div id="health-trends" style="height: 120px; display: flex; align-items: flex-end; gap: var(--spacing-2); padding: var(--spacing-2) 0;">
+                <!-- Skeleton bars -->
+                <div class="skeleton" style="flex: 1; height: 60%;"></div>
+                <div class="skeleton" style="flex: 1; height: 80%;"></div>
+                <div class="skeleton" style="flex: 1; height: 40%;"></div>
+                <div class="skeleton" style="flex: 1; height: 90%;"></div>
+                <div class="skeleton" style="flex: 1; height: 70%;"></div>
+                <div class="skeleton" style="flex: 1; height: 50%;"></div>
+                <div class="skeleton" style="flex: 1; height: 75%;"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Recent Records -->
+        <section>
+          <div class="card" style="padding: var(--spacing-6);">
+            <div class="card-header">
+              <h3 class="card-title">📋 Recent Medical Records</h3>
+              <a href="/medical-records.html" style="font-size: var(--font-size-sm);">View all</a>
+            </div>
+            <div id="recent-records">
+              <div class="skeleton skeleton-text" style="height: 50px;"></div>
+              <div class="skeleton skeleton-text" style="height: 50px;"></div>
+              <div class="skeleton skeleton-text" style="height: 50px;"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bottom Navigation (Mobile) -->
+  <nav id="bottom-nav" class="bottom-nav" role="navigation" aria-label="Mobile navigation"></nav>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- JavaScript -->
+  <script type="module">
+    import App from '/js/app.js';
+    import AuthService from '/js/services/auth.js';
+    import Navigation from '/js/navigation.js';
+    import Theme from '/js/theme.js';
+    import API from '/js/services/api.js';
+    import { showToast } from '/js/components/toast.js';
+
+    // ===== DASHBOARD CONTROLLER =====
+
+    const Dashboard = {
+      // State
+      user: null,
+      healthData: null,
+
+      // Initialize
+      async init() {
+        try {
+          // Get user
+          this.user = await AuthService.getCurrentUser();
+          
+          // Update greeting
+          this.updateGreeting();
+          
+          // Load dashboard data
+          await this.loadDashboardData();
+          
+          // Hide loading
+          App.hideLoading();
+          
+        } catch (error) {
+          App.handleError(error);
+          App.hideLoading();
+          
+          // Redirect to login if unauthorized
+          if (error.status === 401) {
+            window.location.href = '/login.html';
+          }
+        }
+      },
+
+      // Update greeting
+      updateGreeting() {
+        const name = this.user?.full_name || 'User';
+        const hour = new Date().getHours();
+        let greeting = 'Good evening';
+        let emoji = '🌙';
+        
+        if (hour < 12) {
+          greeting = 'Good morning';
+          emoji = '🌅';
+        } else if (hour < 17) {
+          greeting = 'Good afternoon';
+          emoji = '☀️';
+        }
+        
+        document.getElementById('greeting-text').innerHTML = `${greeting}, <span id="user-name">${name}</span>`;
+        document.getElementById('greeting-emoji').textContent = emoji;
+      },
+
+      // Load dashboard data
+      async loadDashboardData() {
+        try {
+          // Get health overview
+          const overview = await API.get('/dashboard/overview');
+          
+          // Get health metrics
+          const metrics = await API.get('/dashboard/metrics');
+          
+          // Update UI
+          this.renderHealthMetrics(metrics);
+          this.renderUpcomingAppointment(overview.upcoming_appointments);
+          this.renderMedications(overview.medications_due);
+          this.renderNotifications(overview.notifications);
+          this.renderRecentRecords(overview.recent_records);
+          this.renderHealthTrends(overview.health_trends);
+          
+        } catch (error) {
+          console.error('Error loading dashboard data:', error);
+          // Show empty states
+          this.renderEmptyStates();
+        }
+      },
+
+      // Render health metrics
+      renderHealthMetrics(metrics) {
+        const container = document.getElementById('health-metrics');
+        if (!metrics || Object.keys(metrics).length === 0) {
+          container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: var(--spacing-4); color: var(--color-text-secondary);">
+              <p>No health data available yet.</p>
+              <p style="font-size: var(--font-size-sm);">Connect your health devices or add your health information in settings.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const metricItems = [
+          { label: 'Heart Rate', value: metrics.heart_rate, unit: 'bpm', icon: '❤️' },
+          { label: 'Blood Pressure', value: metrics.blood_pressure, unit: '', icon: '🩸' },
+          { label: 'Steps', value: metrics.steps, unit: 'steps', icon: '👣' },
+          { label: 'Sleep', value: metrics.sleep, unit: 'hrs', icon: '😴' },
+        ];
+
+        container.innerHTML = metricItems.map(item => `
+          <div class="card" style="padding: var(--spacing-4); text-align: center; border-color: transparent; background: var(--color-surface-hover);">
+            <div style="font-size: 24px; margin-bottom: var(--spacing-2);">${item.icon}</div>
+            <div style="font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); color: var(--color-text);">
+              ${item.value || '--'}
+            </div>
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-tertiary);">
+              ${item.label} ${item.unit}
+            </div>
+          </div>
+        `).join('');
+      },
+
+      // Render upcoming appointment
+      renderUpcomingAppointment(appointments) {
+        const container = document.getElementById('upcoming-appointment');
+        
+        if (!appointments || appointments.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: var(--spacing-4);">
+              <p style="color: var(--color-text-secondary); margin-bottom: var(--spacing-3);">No upcoming appointments</p>
+              <a href="/appointments.html" class="btn btn-primary btn-sm">Book an Appointment</a>
+            </div>
+          `;
+          return;
+        }
+
+        const appt = appointments[0];
+        const date = new Date(appt.date);
+        const formattedDate = date.toLocaleDateString('en-US', { 
+          weekday: 'short', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+
+        container.innerHTML = `
+          <div style="display: flex; align-items: center; gap: var(--spacing-4); padding: var(--spacing-3); background: var(--color-primary-surface); border-radius: var(--radius-lg);">
+            <div style="text-align: center; min-width: 60px;">
+              <div style="font-size: var(--font-size-2xl);">📅</div>
+              <div style="font-size: var(--font-size-xs); color: var(--color-text-secondary);">${formattedDate}</div>
+            </div>
+            <div style="flex: 1;">
+              <div style="font-weight: var(--font-weight-semibold);">${appt.doctor_name || 'Doctor'}</div>
+              <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">
+                ${appt.specialty || 'General'} • ${appt.time || 'Time TBD'}
+              </div>
+            </div>
+            <a href="/appointments.html" class="btn btn-sm btn-outline">View</a>
+          </div>
+        `;
+      },
+
+      // Render medications
+      renderMedications(medications) {
+        const container = document.getElementById('medication-reminder');
+        
+        if (!medications || medications.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: var(--spacing-4);">
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">No medications added</p>
+              <a href="/medications.html" class="btn btn-sm btn-primary" style="margin-top: var(--spacing-2);">Add Medication</a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = medications.slice(0, 2).map(med => `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-3); border-bottom: 1px solid var(--color-border);">
+            <div>
+              <div style="font-weight: var(--font-weight-semibold);">${med.name}</div>
+              <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">
+                ${med.dosage} • ${med.schedule}
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--spacing-2);">
+              <span class="badge ${med.taken ? 'badge-success' : 'badge-warning'}">
+                ${med.taken ? '✓ Taken' : '⏰ Due'}
+              </span>
+            </div>
+          </div>
+        `).join('');
+      },
+
+      // Render notifications
+      renderNotifications(notifications) {
+        const container = document.getElementById('notifications-list');
+        
+        if (!notifications || notifications.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: var(--spacing-4);">
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">No notifications</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = notifications.slice(0, 3).map(notif => `
+          <div style="display: flex; align-items: center; gap: var(--spacing-3); padding: var(--spacing-2) 0; border-bottom: 1px solid var(--color-border-light);">
+            <div style="font-size: 20px;">${notif.icon || '🔔'}</div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);">${notif.title}</div>
+              <div style="font-size: var(--font-size-xs); color: var(--color-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                ${notif.message}
+              </div>
+            </div>
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); flex-shrink: 0;">
+              ${notif.time_ago || 'Just now'}
+            </div>
+          </div>
+        `).join('');
+      },
+
+      // Render recent records
+      renderRecentRecords(records) {
+        const container = document.getElementById('recent-records');
+        
+        if (!records || records.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: var(--spacing-4); color: var(--color-text-secondary);">
+              <p>No medical records yet</p>
+              <p style="font-size: var(--font-size-sm);">Your records will appear here once available.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = records.slice(0, 3).map(record => `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-3); border-bottom: 1px solid var(--color-border-light);">
+            <div>
+              <div style="font-weight: var(--font-weight-semibold);">${record.title || 'Medical Record'}</div>
+              <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">
+                ${record.type || 'Document'} • ${record.date || 'Date unavailable'}
+              </div>
+            </div>
+            <a href="/medical-records.html" class="btn btn-sm btn-ghost">View</a>
+          </div>
+        `).join('');
+      },
+
+      // Render health trends
+      renderHealthTrends(trends) {
+        const container = document.getElementById('health-trends');
+        
+        if (!trends || trends.length === 0) {
+          container.innerHTML = `
+            <div style="width: 100%; text-align: center; padding: var(--spacing-4); color: var(--color-text-secondary);">
+              <p style="font-size: var(--font-size-sm);">No health trends available</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Simple bar chart
+        const maxValue = Math.max(...trends);
+        container.innerHTML = trends.map(value => {
+          const height = maxValue > 0 ? (value / maxValue) * 100 : 0;
+          return `
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--spacing-1);">
+              <div style="width: 100%; height: ${height}%; min-height: 10px; background: var(--color-primary-gradient); border-radius: var(--radius-sm); transition: height var(--transition-slow);"></div>
+              <div style="font-size: var(--font-size-xs); color: var(--color-text-tertiary);">${value}</div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      // Render empty states
+      renderEmptyStates() {
+        this.renderHealthMetrics(null);
+        this.renderUpcomingAppointment(null);
+        this.renderMedications(null);
+        this.renderNotifications(null);
+        this.renderRecentRecords(null);
+        this.renderHealthTrends(null);
+      }
+    };
+
+    // ===== INITIALIZE =====
+
+    // Setup navigation first
+    const userRole = AuthService.getRole() || 'patient';
+    Navigation.init(userRole, true);
+
+    // Initialize dashboard
+    Dashboard.init().catch(error => {
+      console.error('Dashboard initialization error:', error);
+      App.hideLoading();
+    });
+
+    // Theme toggle in header
+    document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+      Theme.toggle();
+    });
+
+    // Export for debugging
+    window.Dashboard = Dashboard;
+  </script>
+</body>
+</html>

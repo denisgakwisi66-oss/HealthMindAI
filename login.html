@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Login — HealthMind AI</title>
+  <meta name="description" content="Log in to your HealthMind AI account">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <div id="loading-overlay" style="display: none;"></div>
+
+  <div class="app-container" style="min-height: 100vh; align-items: center; justify-content: center; background: var(--color-background);">
+    <div style="width: 100%; max-width: 440px; padding: var(--spacing-6);">
+      <!-- Brand -->
+      <div style="text-align: center; margin-bottom: var(--spacing-8);">
+        <a href="/" class="sidebar-brand" style="justify-content: center;">
+          <span class="sidebar-brand-icon">HM</span>
+          <span class="sidebar-brand-text" style="font-size: var(--font-size-xl);">HealthMind AI</span>
+        </a>
+        <h2 style="font-size: var(--font-size-2xl); margin-top: var(--spacing-6); margin-bottom: var(--spacing-2);">Welcome Back</h2>
+        <p style="color: var(--color-text-secondary);">Log in to your health assistant</p>
+      </div>
+
+      <!-- Login Form -->
+      <div class="card" style="padding: var(--spacing-8);">
+        <form id="login-form" novalidate>
+          <!-- Email -->
+          <div class="input-group">
+            <label for="email" class="input-label">
+              Email Address <span class="required">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              class="input-field" 
+              placeholder="you@example.com"
+              required
+              autocomplete="email"
+              autofocus
+            >
+            <div class="input-error" id="email-error"></div>
+          </div>
+
+          <!-- Password -->
+          <div class="input-group">
+            <label for="password" class="input-label">
+              Password <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input 
+                type="password" 
+                id="password" 
+                class="input-field" 
+                placeholder="Enter your password"
+                required
+                autocomplete="current-password"
+                minlength="8"
+              >
+              <button type="button" class="input-toggle" aria-label="Toggle password visibility" id="password-toggle">
+                👁️
+              </button>
+            </div>
+            <div class="input-error" id="password-error"></div>
+          </div>
+
+          <!-- Remember Me & Forgot Password -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-6);">
+            <label style="display: flex; align-items: center; gap: var(--spacing-2); font-size: var(--font-size-sm); color: var(--color-text-secondary); cursor: pointer;">
+              <input type="checkbox" id="remember-me" style="width: 18px; height: 18px; accent-color: var(--color-primary);">
+              Remember me
+            </label>
+            <a href="/forgot-password.html" style="font-size: var(--font-size-sm);">Forgot password?</a>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-btn">
+            Log In
+          </button>
+
+          <!-- Divider -->
+          <div class="divider" style="margin: var(--spacing-6) 0;">
+            <span style="background: var(--color-surface); padding: 0 var(--spacing-4); color: var(--color-text-tertiary); font-size: var(--font-size-sm);">or continue with</span>
+          </div>
+
+          <!-- OAuth Buttons -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-3);">
+            <button type="button" class="btn btn-outline btn-sm" id="google-login" style="justify-content: center;">
+              <span style="font-size: 20px; margin-right: var(--spacing-2);">G</span>
+              Google
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="apple-login" style="justify-content: center;">
+              <span style="font-size: 20px; margin-right: var(--spacing-2);">🍎</span>
+              Apple
+            </button>
+          </div>
+
+          <!-- Register Link -->
+          <p style="text-align: center; margin-top: var(--spacing-6); font-size: var(--font-size-sm); color: var(--color-text-secondary);">
+            Don't have an account? <a href="/register.html">Create one now</a>
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module">
+    import AuthService from '/js/services/auth.js';
+    import App from '/js/app.js';
+
+    const form = document.getElementById('login-form');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const passwordToggle = document.getElementById('password-toggle');
+    const loginBtn = document.getElementById('login-btn');
+    const rememberMe = document.getElementById('remember-me');
+
+    // Toggle password visibility
+    passwordToggle.addEventListener('click', () => {
+      const type = passwordInput.type === 'password' ? 'text' : 'password';
+      passwordInput.type = type;
+      passwordToggle.textContent = type === 'password' ? '👁️' : '🙈';
+    });
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Clear previous errors
+      clearErrors();
+      
+      // Validate
+      if (!validateForm()) {
+        return;
+      }
+
+      // Show loading
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<div class="spinner spinner-sm spinner-white"></div> Logging in...';
+
+      try {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        const response = await AuthService.login(email, password);
+        
+        // Store remember me preference
+        if (rememberMe.checked) {
+          localStorage.setItem('remember-email', email);
+        } else {
+          localStorage.removeItem('remember-email');
+        }
+
+        // Redirect based on role
+        const role = response.user?.role || 'patient';
+        let redirectUrl = '/dashboard.html';
+        
+        if (role === 'doctor') {
+          redirectUrl = '/doctor-dashboard.html';
+        } else if (role === 'admin') {
+          redirectUrl = '/admin-dashboard.html';
+        }
+
+        App.showToast('success', 'Welcome back!', `Hello, ${response.user?.full_name || 'User'}!`);
+        
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 500);
+
+      } catch (error) {
+        App.handleError(error);
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Log In';
+        
+        // Show error on field
+        if (error.status === 401) {
+          showError('email', 'Invalid email or password');
+          showError('password', 'Please check your credentials');
+        }
+      }
+    });
+
+    // Validation
+    function validateForm() {
+      let isValid = true;
+      
+      // Email
+      const email = emailInput.value.trim();
+      if (!email) {
+        showError('email', 'Email is required');
+        isValid = false;
+      } else if (!isValidEmail(email)) {
+        showError('email', 'Please enter a valid email address');
+        isValid = false;
+      }
+
+      // Password
+      const password = passwordInput.value;
+      if (!password) {
+        showError('password', 'Password is required');
+        isValid = false;
+      } else if (password.length < 8) {
+        showError('password', 'Password must be at least 8 characters');
+        isValid = false;
+      }
+
+      return isValid;
+    }
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function showError(fieldId, message) {
+      const errorEl = document.getElementById(`${fieldId}-error`);
+      if (errorEl) {
+        errorEl.textContent = message;
+        const input = document.getElementById(fieldId);
+        if (input) {
+          input.classList.add('error');
+        }
+      }
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.input-error').forEach(el => el.textContent = '');
+      document.querySelectorAll('.input-field').forEach(el => el.classList.remove('error'));
+    }
+
+    // Restore remembered email
+    const rememberedEmail = localStorage.getItem('remember-email');
+    if (rememberedEmail) {
+      emailInput.value = rememberedEmail;
+      rememberMe.checked = true;
+    }
+
+    // OAuth handlers
+    document.getElementById('google-login')?.addEventListener('click', () => {
+      window.location.href = '/api/auth/oauth/google';
+    });
+
+    document.getElementById('apple-login')?.addEventListener('click', () => {
+      window.location.href = '/api/auth/oauth/apple';
+    });
+
+    // Clear App loading
+    App.hideLoading();
+  </script>
+</body>
+</html>

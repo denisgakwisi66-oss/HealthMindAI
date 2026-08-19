@@ -1,0 +1,189 @@
+/* ============================================
+   HEALTHMIND AI — NOTIFICATIONS STYLES
+   ============================================ */
+
+.notification-filters {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-6);
+  flex-wrap: wrap;
+  padding: var(--spacing-2);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.filter-btn {
+  padding: var(--spacing-2) var(--spacing-4);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.filter-btn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.filter-btn.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* Notification Item */
+.notification-item {
+  display: flex;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  position: relative;
+}
+
+.notification-item:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-primary);
+}
+
+.notification-item.unread {
+  background: var(--color-primary-surface);
+  border-left: 4px solid var(--color-primary);
+}
+
+.notification-item .notification-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-md);
+}
+
+.notification-item .notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-item .notification-title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+}
+
+.notification-item .notification-message {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-1);
+}
+
+.notification-item .notification-time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--spacing-1);
+  display: block;
+}
+
+.notification-item .notification-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+  align-items: flex-start;
+}
+
+.notification-item .notification-actions button {
+  background: none;
+  border: none;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: var(--spacing-1);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  font-size: var(--font-size-sm);
+}
+
+.notification-item .notification-actions button:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.notification-item .notification-actions .mark-read-btn:hover {
+  color: var(--color-primary);
+}
+
+.notification-item .notification-actions .delete-btn:hover {
+  color: var(--color-danger);
+}
+
+/* Unread dot */
+.notification-item .unread-dot {
+  position: absolute;
+  top: var(--spacing-3);
+  right: var(--spacing-3);
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Empty State */
+.empty-notifications {
+  text-align: center;
+  padding: var(--spacing-12) var(--spacing-4);
+}
+
+.empty-notifications .empty-icon {
+  font-size: 64px;
+  margin-bottom: var(--spacing-4);
+}
+
+.empty-notifications .empty-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-2);
+}
+
+.empty-notifications .empty-description {
+  color: var(--color-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .notification-filters {
+    gap: var(--spacing-1);
+    padding: var(--spacing-1);
+  }
+
+  .filter-btn {
+    padding: var(--spacing-1) var(--spacing-3);
+    font-size: var(--font-size-xs);
+  }
+
+  .notification-item {
+    flex-wrap: wrap;
+  }
+
+  .notification-item .notification-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: var(--spacing-2);
+    padding-top: var(--spacing-2);
+    border-top: 1px solid var(--color-border-light);
+  }
+}

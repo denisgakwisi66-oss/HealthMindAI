@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Create Account — HealthMind AI</title>
+  <meta name="description" content="Create your HealthMind AI account">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <div id="loading-overlay" style="display: none;"></div>
+
+  <div class="app-container" style="min-height: 100vh; align-items: center; justify-content: center; background: var(--color-background);">
+    <div style="width: 100%; max-width: 520px; padding: var(--spacing-6);">
+      <!-- Brand -->
+      <div style="text-align: center; margin-bottom: var(--spacing-8);">
+        <a href="/" class="sidebar-brand" style="justify-content: center;">
+          <span class="sidebar-brand-icon">HM</span>
+          <span class="sidebar-brand-text" style="font-size: var(--font-size-xl);">HealthMind AI</span>
+        </a>
+        <h2 style="font-size: var(--font-size-2xl); margin-top: var(--spacing-6); margin-bottom: var(--spacing-2);">Create Your Account</h2>
+        <p style="color: var(--color-text-secondary);">Start your health journey today</p>
+      </div>
+
+      <!-- Register Form -->
+      <div class="card" style="padding: var(--spacing-8);">
+        <form id="register-form" novalidate>
+          <!-- Full Name -->
+          <div class="input-group">
+            <label for="full-name" class="input-label">
+              Full Name <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="full-name" 
+              class="input-field" 
+              placeholder="John Doe"
+              required
+              autocomplete="name"
+              autofocus
+            >
+            <div class="input-error" id="full-name-error"></div>
+          </div>
+
+          <!-- Email -->
+          <div class="input-group">
+            <label for="email" class="input-label">
+              Email Address <span class="required">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              class="input-field" 
+              placeholder="you@example.com"
+              required
+              autocomplete="email"
+            >
+            <div class="input-error" id="email-error"></div>
+          </div>
+
+          <!-- Phone -->
+          <div class="input-group">
+            <label for="phone" class="input-label">
+              Phone Number <span style="color: var(--color-text-tertiary); font-weight: var(--font-weight-regular);">(optional)</span>
+            </label>
+            <input 
+              type="tel" 
+              id="phone" 
+              class="input-field" 
+              placeholder="+1 (555) 000-0000"
+              autocomplete="tel"
+            >
+            <div class="input-error" id="phone-error"></div>
+          </div>
+
+          <!-- Date of Birth -->
+          <div class="input-group">
+            <label for="dob" class="input-label">
+              Date of Birth <span class="required">*</span>
+            </label>
+            <input 
+              type="date" 
+              id="dob" 
+              class="input-field" 
+              required
+              max="2010-01-01"
+            >
+            <div class="input-error" id="dob-error"></div>
+          </div>
+
+          <!-- Role -->
+          <div class="input-group">
+            <label for="role" class="input-label">
+              I am a <span class="required">*</span>
+            </label>
+            <select id="role" class="input-field" required>
+              <option value="">Select your role...</option>
+              <option value="patient">Patient</option>
+              <option value="doctor">Doctor / Healthcare Provider</option>
+            </select>
+            <div class="input-error" id="role-error"></div>
+          </div>
+
+          <!-- Password -->
+          <div class="input-group">
+            <label for="password" class="input-label">
+              Password <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <input 
+                type="password" 
+                id="password" 
+                class="input-field" 
+                placeholder="Create a strong password"
+                required
+                autocomplete="new-password"
+                minlength="8"
+              >
+              <button type="button" class="input-toggle" aria-label="Toggle password visibility" id="password-toggle">
+                👁️
+              </button>
+            </div>
+            <!-- Password Strength -->
+            <div style="margin-top: var(--spacing-2);">
+              <div id="password-strength" style="display: flex; gap: var(--spacing-1); height: 4px;">
+                <div style="flex: 1; background: var(--color-border); border-radius: var(--radius-sm); transition: background var(--transition-fast);"></div>
+                <div style="flex: 1; background: var(--color-border); border-radius: var(--radius-sm); transition: background var(--transition-fast);"></div>
+                <div style="flex: 1; background: var(--color-border); border-radius: var(--radius-sm); transition: background var(--transition-fast);"></div>
+                <div style="flex: 1; background: var(--color-border); border-radius: var(--radius-sm); transition: background var(--transition-fast);"></div>
+              </div>
+              <div id="password-strength-label" style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-top: var(--spacing-1);">
+                Password must be at least 8 characters
+              </div>
+            </div>
+            <div class="input-error" id="password-error"></div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="input-group">
+            <label for="confirm-password" class="input-label">
+              Confirm Password <span class="required">*</span>
+            </label>
+            <input 
+              type="password" 
+              id="confirm-password" 
+              class="input-field" 
+              placeholder="Confirm your password"
+              required
+              autocomplete="new-password"
+            >
+            <div class="input-error" id="confirm-password-error"></div>
+          </div>
+
+          <!-- Terms -->
+          <div style="margin-bottom: var(--spacing-6);">
+            <label style="display: flex; align-items: flex-start; gap: var(--spacing-2); font-size: var(--font-size-sm); color: var(--color-text-secondary); cursor: pointer;">
+              <input type="checkbox" id="terms" style="width: 18px; height: 18px; accent-color: var(--color-primary); margin-top: 2px; flex-shrink: 0;" required>
+              <span>
+                I agree to the <a href="/terms" target="_blank">Terms of Service</a> and 
+                <a href="/privacy" target="_blank">Privacy Policy</a>
+              </span>
+            </label>
+            <div class="input-error" id="terms-error"></div>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="register-btn">
+            Create Account
+          </button>
+
+          <!-- Divider -->
+          <div class="divider" style="margin: var(--spacing-6) 0;">
+            <span style="background: var(--color-surface); padding: 0 var(--spacing-4); color: var(--color-text-tertiary); font-size: var(--font-size-sm);">or continue with</span>
+          </div>
+
+          <!-- OAuth Buttons -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-3);">
+            <button type="button" class="btn btn-outline btn-sm" id="google-register" style="justify-content: center;">
+              <span style="font-size: 20px; margin-right: var(--spacing-2);">G</span>
+              Google
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="apple-register" style="justify-content: center;">
+              <span style="font-size: 20px; margin-right: var(--spacing-2);">🍎</span>
+              Apple
+            </button>
+          </div>
+
+          <!-- Login Link -->
+          <p style="text-align: center; margin-top: var(--spacing-6); font-size: var(--font-size-sm); color: var(--color-text-secondary);">
+            Already have an account? <a href="/login.html">Log in</a>
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module">
+    import AuthService from '/js/services/auth.js';
+    import App from '/js/app.js';
+
+    const form = document.getElementById('register-form');
+    const registerBtn = document.getElementById('register-btn');
+    
+    // Password strength
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirm-password');
+    const strengthBars = document.querySelectorAll('#password-strength div');
+    const strengthLabel = document.getElementById('password-strength-label');
+
+    // Password toggle
+    document.getElementById('password-toggle').addEventListener('click', () => {
+      const type = passwordInput.type === 'password' ? 'text' : 'password';
+      passwordInput.type = type;
+      document.getElementById('password-toggle').textContent = type === 'password' ? '👁️' : '🙈';
+    });
+
+    // Password strength checker
+    passwordInput.addEventListener('input', () => {
+      const password = passwordInput.value;
+      const strength = calculatePasswordStrength(password);
+      
+      strengthBars.forEach((bar, index) => {
+        if (index < strength.score) {
+          bar.style.background = strength.color;
+        } else {
+          bar.style.background = 'var(--color-border)';
+        }
+      });
+      
+      strengthLabel.textContent = strength.label;
+      strengthLabel.style.color = strength.color;
+    });
+
+    function calculatePasswordStrength(password) {
+      let score = 0;
+      const checks = [
+        password.length >= 8,
+        /[a-z]/.test(password),
+        /[A-Z]/.test(password),
+        /[0-9]/.test(password),
+        /[^a-zA-Z0-9]/.test(password),
+      ];
+      
+      score = checks.filter(Boolean).length;
+      
+      const levels = [
+        { label: 'Very Weak', color: 'var(--color-danger)' },
+        { label: 'Weak', color: 'var(--color-danger)' },
+        { label: 'Fair', color: 'var(--color-warning)' },
+        { label: 'Good', color: 'var(--color-success)' },
+        { label: 'Strong', color: 'var(--color-success)' },
+      ];
+      
+      const index = Math.min(score, 4);
+      return {
+        score: index + 1,
+        label: levels[index].label,
+        color: levels[index].color,
+      };
+    }
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      clearErrors();
+      
+      if (!validateForm()) {
+        return;
+      }
+
+      registerBtn.disabled = true;
+      registerBtn.innerHTML = '<div class="spinner spinner-sm spinner-white"></div> Creating account...';
+
+      try {
+        const formData = {
+          full_name: document.getElementById('full-name').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          password: document.getElementById('password').value,
+          date_of_birth: document.getElementById('dob').value,
+          role: document.getElementById('role').value,
+        };
+
+        const response = await AuthService.register(formData);
+        
+        App.showToast('success', 'Account Created!', 'Welcome to HealthMind AI. Redirecting...');
+        
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1000);
+
+      } catch (error) {
+        App.handleError(error);
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'Create Account';
+        
+        // Show field-specific errors
+        if (error.data?.error?.details) {
+          const details = error.data.error.details;
+          Object.keys(details).forEach(key => {
+            const fieldMap = {
+              'email': 'email',
+              'password': 'password',
+              'full_name': 'full-name',
+              'phone': 'phone',
+              'date_of_birth': 'dob',
+              'role': 'role',
+            };
+            const fieldId = fieldMap[key];
+            if (fieldId) {
+              showError(fieldId, Array.isArray(details[key]) ? details[key][0] : details[key]);
+            }
+          });
+        }
+      }
+    });
+
+    // Validation
+    function validateForm() {
+      let isValid = true;
+      
+      // Full Name
+      const fullName = document.getElementById('full-name').value.trim();
+      if (!fullName) {
+        showError('full-name', 'Full name is required');
+        isValid = false;
+      } else if (fullName.length < 2) {
+        showError('full-name', 'Name must be at least 2 characters');
+        isValid = false;
+      }
+
+      // Email
+      const email = document.getElementById('email').value.trim();
+      if (!email) {
+        showError('email', 'Email is required');
+        isValid = false;
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError('email', 'Please enter a valid email address');
+        isValid = false;
+      }
+
+      // Phone (optional but validate if provided)
+      const phone = document.getElementById('phone').value.trim();
+      if (phone && !/^[\+\d\s\-\(\)]{7,20}$/.test(phone)) {
+        showError('phone', 'Please enter a valid phone number');
+        isValid = false;
+      }
+
+      // Date of Birth
+      const dob = document.getElementById('dob').value;
+      if (!dob) {
+        showError('dob', 'Date of birth is required');
+        isValid = false;
+      } else {
+        const age = calculateAge(dob);
+        if (age < 18) {
+          showError('dob', 'You must be at least 18 years old');
+          isValid = false;
+        }
+      }
+
+      // Role
+      const role = document.getElementById('role').value;
+      if (!role) {
+        showError('role', 'Please select your role');
+        isValid = false;
+      }
+
+      // Password
+      const password = document.getElementById('password').value;
+      if (!password) {
+        showError('password', 'Password is required');
+        isValid = false;
+      } else if (password.length < 8) {
+        showError('password', 'Password must be at least 8 characters');
+        isValid = false;
+      }
+
+      // Confirm Password
+      const confirm = document.getElementById('confirm-password').value;
+      if (!confirm) {
+        showError('confirm-password', 'Please confirm your password');
+        isValid = false;
+      } else if (password && confirm !== password) {
+        showError('confirm-password', 'Passwords do not match');
+        isValid = false;
+      }
+
+      // Terms
+      if (!document.getElementById('terms').checked) {
+        showError('terms', 'You must agree to the Terms of Service');
+        isValid = false;
+      }
+
+      return isValid;
+    }
+
+    function calculateAge(dob) {
+      const today = new Date();
+      const birthDate = new Date(dob);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    }
+
+    function showError(fieldId, message) {
+      const errorEl = document.getElementById(`${fieldId}-error`);
+      if (errorEl) {
+        errorEl.textContent = message;
+        const input = document.getElementById(fieldId);
+        if (input) {
+          input.classList.add('error');
+        }
+      }
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.input-error').forEach(el => el.textContent = '');
+      document.querySelectorAll('.input-field').forEach(el => el.classList.remove('error'));
+    }
+
+    // OAuth handlers
+    document.getElementById('google-register')?.addEventListener('click', () => {
+      window.location.href = '/api/auth/oauth/google';
+    });
+
+    document.getElementById('apple-register')?.addEventListener('click', () => {
+      window.location.href = '/api/auth/oauth/apple';
+    });
+
+    App.hideLoading();
+  </script>
+</body>
+</html>

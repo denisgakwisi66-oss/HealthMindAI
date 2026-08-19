@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>HealthMind AI — Healthcare Made Smarter</title>
+  <meta name="description" content="Your health, one intelligent assistant. Understand your health, organize your care, stay connected.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div class="spinner spinner-lg"></div>
+      <p class="text-secondary">Loading HealthMind AI...</p>
+    </div>
+  </div>
+
+  <!-- App Container -->
+  <div class="app-container">
+    <!-- Public Navigation -->
+    <header class="public-header">
+      <div class="public-header-inner">
+        <a href="/" class="sidebar-brand">
+          <span class="sidebar-brand-icon">HM</span>
+          <span class="sidebar-brand-text" style="font-size: var(--font-size-lg);">HealthMind AI</span>
+        </a>
+
+        <nav class="public-nav" aria-label="Public navigation">
+          <a href="/#features" class="text-secondary hover:text-primary">Features</a>
+          <a href="/#how-it-works" class="text-secondary hover:text-primary">How It Works</a>
+          <a href="/#ai" class="text-secondary hover:text-primary">AI</a>
+          <a href="/#security" class="text-secondary hover:text-primary">Security</a>
+          <a href="/#about" class="text-secondary hover:text-primary">About</a>
+          <a href="/#contact" class="text-secondary hover:text-primary">Contact</a>
+        </nav>
+
+        <div class="public-actions">
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+          <a href="/login.html" class="btn btn-ghost btn-sm">Log In</a>
+          <a href="/register.html" class="btn btn-primary btn-sm">Create Account</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" class="main-content" style="margin-left: 0;">
+      <!-- HERO SECTION -->
+      <section class="hero-section" style="padding: var(--spacing-16) 0; position: relative; overflow: hidden;">
+        <!-- Flowing background path -->
+        <svg class="flowing-path" style="position: absolute; top: 0; right: 0; width: 50%; height: 100%; opacity: 0.05;" viewBox="0 0 800 600" fill="none">
+          <path d="M0,300 Q100,200 200,250 T400,300 T600,250 T800,300" stroke="var(--color-primary)" stroke-width="3" stroke-dasharray="1000" stroke-dashoffset="1000"/>
+          <path d="M0,350 Q100,250 200,300 T400,350 T600,300 T800,350" stroke="var(--color-secondary)" stroke-width="2" stroke-dasharray="1000" stroke-dashoffset="1000" style="animation-delay: 1s;"/>
+          <path d="M0,400 Q100,300 200,350 T400,400 T600,350 T800,400" stroke="var(--color-ai)" stroke-width="2" stroke-dasharray="1000" stroke-dashoffset="1000" style="animation-delay: 2s;"/>
+        </svg>
+
+        <div style="max-width: var(--max-content-width); margin: 0 auto; padding: 0 var(--spacing-6); position: relative; z-index: 1;">
+          <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--spacing-12); align-items: center;">
+            <!-- Left Content -->
+            <div>
+              <div class="badge badge-ai" style="margin-bottom: var(--spacing-4);">
+                🤖 AI-Powered Healthcare
+              </div>
+              <h1 style="font-size: var(--font-size-5xl); font-weight: var(--font-weight-extrabold); line-height: var(--line-height-tight); margin-bottom: var(--spacing-4);">
+                Your Health.<br>
+                <span style="background: var(--color-primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">One Intelligent Assistant.</span>
+              </h1>
+              <p style="font-size: var(--font-size-xl); color: var(--color-text-secondary); margin-bottom: var(--spacing-8); max-width: 480px;">
+                Understand your health. Organize your care. Stay connected with AI-powered healthcare guidance.
+              </p>
+              <div class="flex flex-wrap gap-4" style="margin-bottom: var(--spacing-8);">
+                <a href="/ai-assistant.html" class="btn btn-ai btn-lg">
+                  🤖 Talk to HealthMind AI
+                </a>
+                <a href="/register.html" class="btn btn-primary btn-lg">
+                  Create Account
+                </a>
+              </div>
+              <div class="flex items-center gap-6 text-sm text-secondary">
+                <span>✓ Free to use</span>
+                <span>✓ HIPAA compliant</span>
+                <span>✓ Secure & private</span>
+              </div>
+            </div>
+
+            <!-- Right Content - AI Preview -->
+            <div class="ai-preview" style="position: relative;">
+              <div class="card card-glass" style="padding: var(--spacing-8); border-radius: var(--radius-2xl); position: relative; overflow: hidden;">
+                <!-- AI Activity Rings -->
+                <div class="ai-ring-container" style="width: 80px; height: 80px; margin: 0 auto var(--spacing-6);">
+                  <div class="ai-ring-1" style="border-color: var(--color-ai);"></div>
+                  <div class="ai-ring-2" style="border-color: var(--color-primary);"></div>
+                  <div class="ai-ring-3" style="border-color: var(--color-secondary);"></div>
+                  <div style="width: 60px; height: 60px; border-radius: var(--radius-full); background: var(--color-primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 28px; position: relative; z-index: 1;">
+                    🤖
+                  </div>
+                </div>
+
+                <!-- AI Chat Preview -->
+                <div style="background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--spacing-4); margin-bottom: var(--spacing-4); border: 1px solid var(--color-border);">
+                  <div style="display: flex; gap: var(--spacing-3); align-items: flex-start;">
+                    <span style="font-size: 20px;">🤖</span>
+                    <div>
+                      <div style="font-weight: var(--font-weight-semibold); color: var(--color-text);">HealthMind AI</div>
+                      <p style="color: var(--color-text-secondary); margin: 0; font-size: var(--font-size-sm);">
+                        "How can I help you with your health today?"
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Suggested Prompts -->
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--spacing-2);">
+                  <div style="background: var(--color-surface); border-radius: var(--radius-md); padding: var(--spacing-3); border: 1px solid var(--color-border); cursor: pointer; transition: all var(--transition-fast); font-size: var(--font-size-sm);">
+                    💊 "Help me with my medication"
+                  </div>
+                  <div style="background: var(--color-surface); border-radius: var(--radius-md); padding: var(--spacing-3); border: 1px solid var(--color-border); cursor: pointer; transition: all var(--transition-fast); font-size: var(--font-size-sm);">
+                    📅 "Find a doctor near me"
+                  </div>
+                  <div style="background: var(--color-surface); border-radius: var(--radius-md); padding: var(--spacing-3); border: 1px solid var(--color-border); cursor: pointer; transition: all var(--transition-fast); font-size: var(--font-size-sm);">
+                    📋 "Explain my lab results"
+                  </div>
+                  <div style="background: var(--color-surface); border-radius: var(--radius-md); padding: var(--spacing-3); border: 1px solid var(--color-border); cursor: pointer; transition: all var(--transition-fast); font-size: var(--font-size-sm);">
+                    ❤️ "Track my health trends"
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES SECTION -->
+      <section id="features" style="padding: var(--spacing-16) 0; background: var(--color-background);">
+        <div style="max-width: var(--max-content-width); margin: 0 auto; padding: 0 var(--spacing-6);">
+          <div style="text-align: center; max-width: 640px; margin: 0 auto var(--spacing-12);">
+            <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--spacing-4);">Intelligent Healthcare, <br><span style="background: var(--color-primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Simplified</span></h2>
+            <p style="font-size: var(--font-size-lg); color: var(--color-text-secondary);">HealthMind AI combines cutting-edge AI with compassionate care to help you take control of your health journey.</p>
+          </div>
+
+          <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--spacing-6);">
+            <!-- Feature 1 -->
+            <div class="card" style="text-align: center; padding: var(--spacing-8);">
+              <div style="font-size: 40px; margin-bottom: var(--spacing-4);">🤖</div>
+              <h3 style="font-size: var(--font-size-lg);">AI Health Assistant</h3>
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Get intelligent answers about your health, medications, appointments, and more — 24/7.</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="card" style="text-align: center; padding: var(--spacing-8);">
+              <div style="font-size: 40px; margin-bottom: var(--spacing-4);">📋</div>
+              <h3 style="font-size: var(--font-size-lg);">Organized Health Records</h3>
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Keep all your medical records, lab results, and health history in one secure place.</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="card" style="text-align: center; padding: var(--spacing-8);">
+              <div style="font-size: 40px; margin-bottom: var(--spacing-4);">📅</div>
+              <h3 style="font-size: var(--font-size-lg);">Smart Appointment Management</h3>
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Find, book, and manage appointments with healthcare providers effortlessly.</p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="card" style="text-align: center; padding: var(--spacing-8);">
+              <div style="font-size: 40px; margin-bottom: var(--spacing-4);">💊</div>
+              <h3 style="font-size: var(--font-size-lg);">Medication Reminders</h3>
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Never miss a dose with intelligent medication tracking and timely reminders.</p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="card" style="text-align: center; padding: var(--spacing-8);">
+              <div style="font-size: 40px; margin-bottom: var(--spacing-4);">🔔</div>
+              <h3 style="font-size: var(--font-size-lg);">Real-time Notifications</h3>
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Stay informed about appointments, medication reminders, and health updates.</p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="card" style="text-align: center; padding: var(--spacing-8);">
+              <div style="font-size: 40px; margin-bottom: var(--spacing-4);">🔒</div>
+              <h3 style="font-size: var(--font-size-lg);">Secure & Private</h3>
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Your health data is encrypted and protected with enterprise-grade security.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HOW IT WORKS SECTION -->
+      <section id="how-it-works" style="padding: var(--spacing-16) 0;">
+        <div style="max-width: var(--max-content-width); margin: 0 auto; padding: 0 var(--spacing-6);">
+          <div style="text-align: center; max-width: 640px; margin: 0 auto var(--spacing-12);">
+            <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--spacing-4);">How It Works</h2>
+            <p style="font-size: var(--font-size-lg); color: var(--color-text-secondary);">Three simple steps to smarter healthcare.</p>
+          </div>
+
+          <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-8); text-align: center;">
+            <div>
+              <div style="width: 72px; height: 72px; border-radius: var(--radius-full); background: var(--color-primary-surface); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto var(--spacing-4);">
+                1️⃣
+              </div>
+              <h3 style="font-size: var(--font-size-lg);">Create Your Account</h3>
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Sign up for free and set up your health profile in minutes.</p>
+            </div>
+
+            <div>
+              <div style="width: 72px; height: 72px; border-radius: var(--radius-full); background: var(--color-secondary-surface); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto var(--spacing-4);">
+                2️⃣
+              </div>
+              <h3 style="font-size: var(--font-size-lg);">Connect Your Health Data</h3>
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Add your medical records, medications, and health information.</p>
+            </div>
+
+            <div>
+              <div style="width: 72px; height: 72px; border-radius: var(--radius-full); background: var(--color-ai-surface); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto var(--spacing-4);">
+                3️⃣
+              </div>
+              <h3 style="font-size: var(--font-size-lg);">Let AI Guide You</h3>
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Ask questions, get insights, and stay on top of your health journey.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI SECTION -->
+      <section id="ai" style="padding: var(--spacing-16) 0; background: var(--color-background);">
+        <div style="max-width: var(--max-content-width); margin: 0 auto; padding: 0 var(--spacing-6);">
+          <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--spacing-12); align-items: center;">
+            <div>
+              <div class="badge badge-ai" style="margin-bottom: var(--spacing-4);">🤖 AI-POWERED</div>
+              <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--spacing-4);">Intelligent Health <br><span style="background: var(--color-primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Guidance</span></h2>
+              <p style="font-size: var(--font-size-lg); color: var(--color-text-secondary); margin-bottom: var(--spacing-6);">
+                HealthMind AI uses advanced language models to help you understand your health, prepare for appointments, and make informed decisions — while always encouraging professional medical care.
+              </p>
+              <ul style="list-style: none; padding: 0; margin: 0 0 var(--spacing-6);">
+                <li style="display: flex; gap: var(--spacing-2); margin-bottom: var(--spacing-2);">
+                  <span style="color: var(--color-success);">✓</span>
+                  <span style="color: var(--color-text-secondary);">Understand medical terminology in plain language</span>
+                </li>
+                <li style="display: flex; gap: var(--spacing-2); margin-bottom: var(--spacing-2);">
+                  <span style="color: var(--color-success);">✓</span>
+                  <span style="color: var(--color-text-secondary);">Prepare questions for your doctor visits</span>
+                </li>
+                <li style="display: flex; gap: var(--spacing-2); margin-bottom: var(--spacing-2);">
+                  <span style="color: var(--color-success);">✓</span>
+                  <span style="color: var(--color-text-secondary);">Track medications and health trends</span>
+                </li>
+                <li style="display: flex; gap: var(--spacing-2); margin-bottom: var(--spacing-2);">
+                  <span style="color: var(--color-success);">✓</span>
+                  <span style="color: var(--color-text-secondary);">Get intelligent appointment recommendations</span>
+                </li>
+              </ul>
+              <a href="/ai-assistant.html" class="btn btn-ai">Try AI Assistant →</a>
+            </div>
+
+            <div style="position: relative;">
+              <div class="card card-glass" style="padding: var(--spacing-6); border-radius: var(--radius-2xl);">
+                <div style="display: flex; gap: var(--spacing-4); margin-bottom: var(--spacing-4);">
+                  <div class="pulse-dot ai animate-pulse"></div>
+                  <div>
+                    <div style="font-weight: var(--font-weight-semibold);">HealthMind AI</div>
+                    <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Online</div>
+                  </div>
+                </div>
+                
+                <div style="background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--spacing-4); margin-bottom: var(--spacing-4);">
+                  <div style="display: flex; gap: var(--spacing-3); align-items: flex-start;">
+                    <span style="font-size: 20px;">🤖</span>
+                    <div>
+                      <p style="margin: 0 0 var(--spacing-2); color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+                        "Based on your health profile, I notice you have an appointment coming up with Dr. Smith. Would you like me to prepare some questions for you?"
+                      </p>
+                      <div style="display: flex; gap: var(--spacing-2); flex-wrap: wrap;">
+                        <span class="badge">📋 Prepare questions</span>
+                        <span class="badge">📅 Review appointment</span>
+                        <span class="badge">💊 Check medications</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: var(--spacing-3);">
+                  <input type="text" placeholder="Ask me anything..." style="flex: 1; padding: var(--spacing-3) var(--spacing-4); border: 2px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); color: var(--color-text);">
+                  <button class="btn btn-primary" style="padding: var(--spacing-3) var(--spacing-6);">
+                    Send →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECURITY SECTION -->
+      <section id="security" style="padding: var(--spacing-16) 0;">
+        <div style="max-width: var(--max-content-width); margin: 0 auto; padding: 0 var(--spacing-6);">
+          <div style="text-align: center; max-width: 640px; margin: 0 auto var(--spacing-12);">
+            <div class="badge" style="margin-bottom: var(--spacing-4);">🔒 SECURITY</div>
+            <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--spacing-4);">Your Health Data Is <br><span style="background: var(--color-primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Protected</span></h2>
+            <p style="font-size: var(--font-size-lg); color: var(--color-text-secondary);">We take your privacy and security seriously. Your health information is encrypted and never shared without your explicit consent.</p>
+          </div>
+
+          <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--spacing-6);">
+            <div class="card" style="text-align: center; padding: var(--spacing-6);">
+              <div style="font-size: 32px; margin-bottom: var(--spacing-3);">🔐</div>
+              <h4 style="font-size: var(--font-size-base);">End-to-End Encryption</h4>
+              <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary); margin: 0;">All data encrypted in transit and at rest.</p>
+            </div>
+
+            <div class="card" style="text-align: center; padding: var(--spacing-6);">
+              <div style="font-size: 32px; margin-bottom: var(--spacing-3);">🛡️</div>
+              <h4 style="font-size: var(--font-size-base);">HIPAA Compliant</h4>
+              <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary); margin: 0;">Meets healthcare privacy standards.</p>
+            </div>
+
+            <div class="card" style="text-align: center; padding: var(--spacing-6);">
+              <div style="font-size: 32px; margin-bottom: var(--spacing-3);">👤</div>
+              <h4 style="font-size: var(--font-size-base);">Your Data, Your Control</h4>
+              <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary); margin: 0;">Full control over who can access your information.</p>
+            </div>
+
+            <div class="card" style="text-align: center; padding: var(--spacing-6);">
+              <div style="font-size: 32px; margin-bottom: var(--spacing-3);">📋</div>
+              <h4 style="font-size: var(--font-size-base);">Audit Logs</h4>
+              <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary); margin: 0;">Complete visibility into data access.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TESTIMONIALS SECTION -->
+      <section id="testimonials" style="padding: var(--spacing-16) 0; background: var(--color-background);">
+        <div style="max-width: var(--max-content-width); margin: 0 auto; padding: 0 var(--spacing-6);">
+          <div style="text-align: center; max-width: 640px; margin: 0 auto var(--spacing-12);">
+            <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--spacing-4);">What Our Users Say</h2>
+            <p style="font-size: var(--font-size-lg); color: var(--color-text-secondary);">Real stories from people who have improved their health journey.</p>
+          </div>
+
+          <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--spacing-6);">
+            <div class="card" style="padding: var(--spacing-6);">
+              <div style="display: flex; gap: var(--spacing-1); color: var(--color-warning); font-size: 18px; margin-bottom: var(--spacing-3);">★★★★★</div>
+              <p style="color: var(--color-text-secondary); font-style: italic; margin-bottom: var(--spacing-4);">
+                "HealthMind AI helped me understand my lab results and prepare questions for my doctor. I felt so much more confident going into my appointment."
+              </p>
+              <div style="display: flex; align-items: center; gap: var(--spacing-3);">
+                <div style="width: 44px; height: 44px; border-radius: var(--radius-full); background: var(--color-primary-surface); display: flex; align-items: center; justify-content: center; font-weight: var(--font-weight-bold); color: var(--color-primary);">SK</div>
+                <div>
+                  <div style="font-weight: var(--font-weight-semibold);">Sarah K.</div>
+                  <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Patient</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="padding: var(--spacing-6);">
+              <div style="display: flex; gap: var(--spacing-1); color: var(--color-warning); font-size: 18px; margin-bottom: var(--spacing-3);">★★★★★</div>
+              <p style="color: var(--color-text-secondary); font-style: italic; margin-bottom: var(--spacing-4);">
+                "The medication reminders have been a game-changer for my elderly mother. She's never missed a dose since we started using HealthMind AI."
+              </p>
+              <div style="display: flex; align-items: center; gap: var(--spacing-3);">
+                <div style="width: 44px; height: 44px; border-radius: var(--radius-full); background: var(--color-secondary-surface); display: flex; align-items: center; justify-content: center; font-weight: var(--font-weight-bold); color: var(--color-secondary);">MJ</div>
+                <div>
+                  <div style="font-weight: var(--font-weight-semibold);">Michael J.</div>
+                  <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Caregiver</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="padding: var(--spacing-6);">
+              <div style="display: flex; gap: var(--spacing-1); color: var(--color-warning); font-size: 18px; margin-bottom: var(--spacing-3);">★★★★★</div>
+              <p style="color: var(--color-text-secondary); font-style: italic; margin-bottom: var(--spacing-4);">
+                "As someone managing multiple chronic conditions, having all my health information organized and accessible has been life-changing."
+              </p>
+              <div style="display: flex; align-items: center; gap: var(--spacing-3);">
+                <div style="width: 44px; height: 44px; border-radius: var(--radius-full); background: var(--color-ai-surface); display: flex; align-items: center; justify-content: center; font-weight: var(--font-weight-bold); color: var(--color-ai);">DR</div>
+                <div>
+                  <div style="font-weight: var(--font-weight-semibold);">David R.</div>
+                  <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Patient</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA SECTION -->
+      <section id="cta" style="padding: var(--spacing-16) 0; background: var(--color-primary-gradient); color: white;">
+        <div style="max-width: var(--max-content-width); margin: 0 auto; padding: 0 var(--spacing-6); text-align: center;">
+          <h2 style="color: white; font-size: var(--font-size-3xl); margin-bottom: var(--spacing-4);">Ready to Take Control of Your Health?</h2>
+          <p style="color: rgba(255,255,255,0.9); font-size: var(--font-size-lg); margin-bottom: var(--spacing-8); max-width: 480px; margin-left: auto; margin-right: auto;">
+            Join thousands of users who trust HealthMind AI to help them stay on top of their health.
+          </p>
+          <div class="cta-actions flex flex-wrap gap-4" style="justify-content: center;">
+            <a href="/register.html" class="btn" style="background: white; color: var(--color-primary); font-weight: var(--font-weight-bold);">
+              Get Started Free →
+            </a>
+            <a href="/ai-assistant.html" class="btn" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">
+              🤖 Try AI Demo
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer style="padding: var(--spacing-12) 0; background: var(--color-surface); border-top: 1px solid var(--color-border);">
+        <div style="max-width: var(--max-content-width); margin: 0 auto; padding: 0 var(--spacing-6);">
+          <div class="grid" style="grid-template-columns: 2fr 1fr 1fr 1fr; gap: var(--spacing-8);">
+            <div>
+              <div style="display: flex; align-items: center; gap: var(--spacing-3); margin-bottom: var(--spacing-4);">
+                <span class="sidebar-brand-icon" style="background: var(--color-primary-gradient); color: white; width: 36px; height: 36px; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-weight: var(--font-weight-bold);">HM</span>
+                <span style="font-weight: var(--font-weight-extrabold); font-size: var(--font-size-lg); color: var(--color-text);">HealthMind AI</span>
+              </div>
+              <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm); max-width: 300px;">
+                AI-powered healthcare guidance to help you understand, organize, and improve your health journey.
+              </p>
+            </div>
+
+            <div>
+              <h6 style="font-weight: var(--font-weight-semibold); color: var(--color-text); margin-bottom: var(--spacing-4);">Product</h6>
+              <ul style="list-style: none; padding: 0; margin: 0;">
+                <li style="margin-bottom: var(--spacing-2);"><a href="/features" class="text-secondary" style="font-size: var(--font-size-sm);">Features</a></li>
+                <li style="margin-bottom: var(--spacing-2);"><a href="/pricing" class="text-secondary" style="font-size: var(--font-size-sm);">Pricing</a></li>
+                <li style="margin-bottom: var(--spacing-2);"><a href="/security" class="text-secondary" style="font-size: var(--font-size-sm);">Security</a></li>
+                <li style="margin-bottom: var(--spacing-2);"><a href="/ai" class="text-secondary" style="font-size: var(--font-size-sm);">AI</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h6 style="font-weight: var(--font-weight-semibold); color: var(--color-text); margin-bottom: var(--spacing-4);">Company</h6>
+              <ul style="list-style: none; padding: 0; margin: 0;">
+                <li style="margin-bottom: var(--spacing-2);"><a href="/about" class="text-secondary" style="font-size: var(--font-size-sm);">About</a></li>
+                <li style="margin-bottom: var(--spacing-2);"><a href="/contact" class="text-secondary" style="font-size: var(--font-size-sm);">Contact</a></li>
+                <li style="margin-bottom: var(--spacing-2);"><a href="/careers" class="text-secondary" style="font-size: var(--font-size-sm);">Careers</a></li>
+                <li style="margin-bottom: var(--spacing-2);"><a href="/blog" class="text-secondary" style="font-size: var(--font-size-sm);">Blog</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h6 style="font-weight: var(--font-weight-semibold); color: var(--color-text); margin-bottom: var(--spacing-4);">Support</h6>
+              <ul style="list-style: none; padding: 0; margin: 0;">
+                <li style="margin-bottom: var(--spacing-2);"><a href="/help" class="text-secondary" style="font-size: var(--font-size-sm);">Help Center</a></li>
+                <li style="margin-bottom: var(--spacing-2);"><a href="/privacy" class="text-secondary" style="font-size: var(--font-size-sm);">Privacy Policy</a></li>
+                <li style="margin-bottom: var(--spacing-2);"><a href="/terms" class="text-secondary" style="font-size: var(--font-size-sm);">Terms of Service</a></li>
+                <li style="margin-bottom: var(--spacing-2);"><a href="/accessibility" class="text-secondary" style="font-size: var(--font-size-sm);">Accessibility</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="divider" style="margin: var(--spacing-8) 0 var(--spacing-4);"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-4);">
+            <p style="font-size: var(--font-size-sm); color: var(--color-text-tertiary); margin: 0;">
+              © 2026 HealthMind AI. All rights reserved.
+            </p>
+            <div style="display: flex; gap: var(--spacing-4);">
+              <a href="#" style="color: var(--color-text-tertiary); font-size: var(--font-size-sm);">Twitter</a>
+              <a href="#" style="color: var(--color-text-tertiary); font-size: var(--font-size-sm);">LinkedIn</a>
+              <a href="#" style="color: var(--color-text-tertiary); font-size: var(--font-size-sm);">YouTube</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- JavaScript -->
+  <!-- Firebase SDK (push notifications / messaging) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

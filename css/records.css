@@ -1,0 +1,184 @@
+/* ============================================
+   HEALTHMIND AI — MEDICAL RECORDS STYLES
+   ============================================ */
+
+.record-tabs {
+  display: flex;
+  gap: var(--spacing-1);
+  margin-bottom: var(--spacing-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-1);
+  border: 1px solid var(--color-border);
+  overflow-x: auto;
+}
+
+.record-tab {
+  padding: var(--spacing-2) var(--spacing-6);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.record-tab:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.record-tab.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.record-search {
+  display: flex;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-6);
+  flex-wrap: wrap;
+}
+
+.record-search .input-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.records-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* Record Card */
+.record-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.record-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary);
+}
+
+.record-card .record-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-md);
+}
+
+.record-card .record-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.record-card .record-info .record-title {
+  font-weight: var(--font-weight-semibold);
+}
+
+.record-card .record-info .record-meta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  display: flex;
+  gap: var(--spacing-4);
+  flex-wrap: wrap;
+}
+
+.record-card .record-badge {
+  flex-shrink: 0;
+}
+
+.record-card .record-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+}
+
+/* AI Summary */
+.record-ai-summary {
+  margin-top: var(--spacing-3);
+  padding: var(--spacing-3);
+  background: var(--color-ai-surface);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-ai);
+}
+
+.record-ai-summary .summary-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-ai);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.record-ai-summary .summary-content {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-1);
+}
+
+/* File Drop Zone */
+.file-drop-zone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.file-drop-zone:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-surface);
+}
+
+.file-drop-zone.dragover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-surface);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .record-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .record-search {
+    flex-direction: column;
+  }
+
+  .record-search .input-field {
+    width: 100% !important;
+  }
+
+  .record-card {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .record-card .record-actions {
+    justify-content: center;
+  }
+
+  .record-card .record-meta {
+    justify-content: center;
+  }
+}

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Medications — HealthMind AI</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/medications.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <div id="loading-overlay" class="loading-overlay" style="display: flex;">
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div class="spinner spinner-lg"></div>
+      <p class="text-secondary">Loading medications...</p>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <aside id="sidebar" class="sidebar"></aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <main id="main-content" class="main-content">
+      <header class="page-header">
+        <div class="flex items-center gap-3">
+          <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <h1 class="page-header-title">💊 Medications</h1>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary btn-sm" id="add-medication-btn">
+            <span>➕</span> Add Medication
+          </button>
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="page-content" class="page-content">
+        <!-- Adherence Summary -->
+        <div class="adherence-summary" id="adherence-summary">
+          <div class="card" style="padding: var(--spacing-4);">
+            <div class="flex items-center justify-between">
+              <div>
+                <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Medication Adherence</div>
+                <div style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold);" id="adherence-rate">--%</div>
+              </div>
+              <div class="adherence-ring" style="width: 80px; height: 80px; position: relative;">
+                <svg viewBox="0 0 36 36" style="transform: rotate(-90deg);">
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="var(--color-border)" stroke-width="3"/>
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="var(--color-primary)" stroke-width="3" 
+                    stroke-dasharray="100" stroke-dashoffset="100" id="adherence-circle"/>
+                </svg>
+                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: var(--font-size-sm); font-weight: var(--font-weight-bold);" id="adherence-text">--%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Medication List -->
+        <div id="medications-list" class="medications-list">
+          <div class="loading-state">
+            <div class="spinner spinner-sm"></div>
+            <span>Loading medications...</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" class="bottom-nav"></nav>
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Add/Edit Medication Modal -->
+  <div id="medication-modal" class="modal-overlay">
+    <div class="modal">
+      <button class="modal-close" aria-label="Close modal">&times;</button>
+      <div class="modal-header">
+        <h3 class="modal-title" id="medication-modal-title">Add Medication</h3>
+      </div>
+      <div class="modal-body">
+        <form id="medication-form" novalidate>
+          <div class="input-group">
+            <label class="input-label">Medication Name <span class="required">*</span></label>
+            <input type="text" id="med-name" class="input-field" placeholder="e.g., Lisinopril" required>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Dosage <span class="required">*</span></label>
+            <input type="text" id="med-dosage" class="input-field" placeholder="e.g., 10mg" required>
+          </div>
+          <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--spacing-4);">
+            <div class="input-group">
+              <label class="input-label">Frequency <span class="required">*</span></label>
+              <select id="med-frequency" class="input-field" required>
+                <option value="daily">Daily</option>
+                <option value="twice-daily">Twice Daily</option>
+                <option value="three-times">Three Times Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="as-needed">As Needed</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Time</label>
+              <input type="time" id="med-time" class="input-field" value="09:00">
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Instructions</label>
+            <textarea id="med-instructions" class="input-field" rows="2" placeholder="e.g., Take with food"></textarea>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Start Date</label>
+            <input type="date" id="med-start-date" class="input-field">
+          </div>
+          <div class="input-group">
+            <label class="input-label">End Date</label>
+            <input type="date" id="med-end-date" class="input-field">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="med-cancel">Cancel</button>
+        <button class="btn btn-primary" id="med-confirm">Add Medication</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/pages/medications.js"></script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+/* ============================================
+   HEALTHMIND AI — ADMIN PORTAL STYLES
+   ============================================ */
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+/* Activity Items */
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-3);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.activity-item .activity-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.activity-item .activity-content {
+  flex: 1;
+}
+
+.activity-item .activity-content .activity-title {
+  font-weight: var(--font-weight-medium);
+}
+
+.activity-item .activity-content .activity-details {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.activity-item .activity-time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+/* User Management Table */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-table th,
+.user-table td {
+  padding: var(--spacing-3);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.user-table th {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.user-table tr:hover {
+  background: var(--color-surface-hover);
+}
+
+.user-table .user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  background: var(--color-primary-surface);
+  color: var(--color-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .user-table {
+    font-size: var(--font-size-sm);
+  }
+
+  .user-table th,
+  .user-table td {
+    padding: var(--spacing-2);
+  }
+
+  .user-table .hide-mobile {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,53 @@
+/* ============================================
+   HEALTHMIND AI — PROFILE STYLES
+   ============================================ */
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--spacing-6);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Profile Card */
+.profile-card {
+  text-align: center;
+  padding: var(--spacing-8) var(--spacing-4);
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--spacing-4);
+  font-size: 48px;
+  font-weight: var(--font-weight-bold);
+  color: white;
+  box-shadow: var(--shadow-lg);
+}
+
+.profile-card h2 {
+  margin-bottom: var(--spacing-1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-card {
+    padding: var(--spacing-4);
+  }
+
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 32px;
+  }
+}

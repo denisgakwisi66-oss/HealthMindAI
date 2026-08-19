@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Appointments — HealthMind AI</title>
+  <meta name="description" content="Manage your healthcare appointments">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/appointments.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <div id="loading-overlay" class="loading-overlay" style="display: flex;">
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div class="spinner spinner-lg"></div>
+      <p class="text-secondary">Loading appointments...</p>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation"></aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <main id="main-content" class="main-content">
+      <header class="page-header">
+        <div class="flex items-center gap-3">
+          <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <h1 class="page-header-title">📅 Appointments</h1>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary btn-sm" id="book-appointment-btn">
+            <span>➕</span> Book Appointment
+          </button>
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="page-content" class="page-content">
+        <!-- Filters -->
+        <div class="appointments-filters">
+          <div class="filter-group">
+            <select id="status-filter" class="input-field" style="width: auto; min-width: 140px;">
+              <option value="all">All Status</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <input type="date" id="date-filter" class="input-field" style="width: auto;">
+            <input type="text" id="search-filter" placeholder="Search..." class="input-field" style="width: 200px;">
+          </div>
+          <div class="view-toggle">
+            <button class="btn btn-sm btn-ghost active" data-view="list">📋 List</button>
+            <button class="btn btn-sm btn-ghost" data-view="calendar">📅 Calendar</button>
+          </div>
+        </div>
+
+        <!-- Appointments List -->
+        <div id="appointments-list" class="appointments-list">
+          <!-- Rendered by JavaScript -->
+          <div class="loading-state">
+            <div class="spinner spinner-sm"></div>
+            <span>Loading appointments...</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" class="bottom-nav" role="navigation" aria-label="Mobile navigation"></nav>
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Booking Modal -->
+  <div id="booking-modal" class="modal-overlay">
+    <div class="modal modal-lg">
+      <button class="modal-close" aria-label="Close modal">&times;</button>
+      <div class="modal-header">
+        <h3 class="modal-title">Book an Appointment</h3>
+      </div>
+      <div class="modal-body">
+        <form id="booking-form" novalidate>
+          <div class="input-group">
+            <label class="input-label">Specialty <span class="required">*</span></label>
+            <select id="booking-specialty" class="input-field" required>
+              <option value="">Select specialty...</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Doctor <span class="required">*</span></label>
+            <select id="booking-doctor" class="input-field" required>
+              <option value="">Select doctor...</option>
+            </select>
+          </div>
+          <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--spacing-4);">
+            <div class="input-group">
+              <label class="input-label">Date <span class="required">*</span></label>
+              <input type="date" id="booking-date" class="input-field" required>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Time <span class="required">*</span></label>
+              <select id="booking-time" class="input-field" required>
+                <option value="">Select time...</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Notes</label>
+            <textarea id="booking-notes" class="input-field" rows="3" placeholder="Any additional notes..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="booking-cancel">Cancel</button>
+        <button class="btn btn-primary" id="booking-confirm">Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/pages/appointments.js"></script>
+</body>
+</html>

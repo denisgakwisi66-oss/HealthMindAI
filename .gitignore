@@ -1,0 +1,48 @@
+﻿# ============================================
+# HealthMind AI - root .gitignore
+# ============================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+
+# --- Environment & secrets (never commit) ---
+.env
+.env.*
+!.env.example
+.env.local
+*.pem
+**/firebase-credentials.json
+**/*firebase-adminsdk*.json
+**/service-account*.json
+**/*service_account*.json
+**/credentials*.json
+
+# --- Databases ---
+*.db
+*.db-journal
+test_*.db
+*.sqlite3
+
+# --- Logs ---
+*.log
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+
+# --- Debug / scratch artifacts at repo root ---
+/*.txt
+/*.exe
+/*.ps1
+/*.bat
+HealthMindAI/

@@ -1,0 +1,51 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    ports:
+      - '8000:8000'
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: healthmind
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+
+  worker:
+    build: .
+    command: celery -A app.worker worker --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+
+  beat:
+    build: .
+    command: celery -A app.worker beat --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+
+volumes:
+  postgres_data:

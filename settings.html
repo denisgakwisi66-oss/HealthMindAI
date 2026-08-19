@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Settings — HealthMind AI</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/themes.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563EB">
+</head>
+<body>
+  <div id="loading-overlay" class="loading-overlay" style="display: flex;">
+    <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div class="spinner spinner-lg"></div>
+      <p class="text-secondary">Loading settings...</p>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation"></aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <main id="main-content" class="main-content">
+      <header class="page-header">
+        <div class="flex items-center gap-3">
+          <button class="mobile-menu-toggle" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <h1 class="page-header-title">⚙️ Settings</h1>
+        </div>
+        <div class="page-header-actions">
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="page-content" class="page-content">
+        <div style="max-width: 800px; margin: 0 auto;">
+          <!-- Theme Settings -->
+          <div class="card" style="margin-bottom: var(--spacing-6);">
+            <h3>🎨 Appearance</h3>
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--spacing-4);">
+              <div>
+                <div style="font-weight: var(--font-weight-medium);">Dark Mode</div>
+                <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Toggle between light and dark themes</div>
+              </div>
+              <button class="btn btn-outline" id="theme-toggle-settings">
+                <span id="theme-toggle-label">Switch to Dark Mode</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Notification Preferences -->
+          <div class="card" style="margin-bottom: var(--spacing-6);">
+            <h3>🔔 Notification Preferences</h3>
+            <form id="notification-settings-form">
+              <div style="display: flex; flex-direction: column; gap: var(--spacing-4);">
+                <label style="display: flex; align-items: center; gap: var(--spacing-3); cursor: pointer;">
+                  <input type="checkbox" id="notif-appointments" checked>
+                  <span>Appointment reminders</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: var(--spacing-3); cursor: pointer;">
+                  <input type="checkbox" id="notif-medications" checked>
+                  <span>Medication reminders</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: var(--spacing-3); cursor: pointer;">
+                  <input type="checkbox" id="notif-updates" checked>
+                  <span>Health updates & tips</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: var(--spacing-3); cursor: pointer;">
+                  <input type="checkbox" id="notif-promotions">
+                  <span>Promotional offers</span>
+                </label>
+              </div>
+              <button type="submit" class="btn btn-primary" style="margin-top: var(--spacing-4);">Save Preferences</button>
+            </form>
+          </div>
+
+          <!-- Language -->
+          <div class="card" style="margin-bottom: var(--spacing-6);">
+            <h3>🌐 Language</h3>
+            <div class="input-group">
+              <select id="language-select" class="input-field">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="zh">中文</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Account Settings -->
+          <div class="card" style="margin-bottom: var(--spacing-6);">
+            <h3>👤 Account</h3>
+            <div style="display: flex; gap: var(--spacing-4); flex-wrap: wrap;">
+              <a href="/profile.html" class="btn btn-outline">Edit Profile</a>
+              <button class="btn btn-ghost" id="logout-settings">Log Out</button>
+            </div>
+          </div>
+
+          <!-- About -->
+          <div class="card" style="border-color: var(--color-border);">
+            <h3>ℹ️ About</h3>
+            <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+              HealthMind AI v1.0.0
+            </p>
+            <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+              Built with ❤️ for better healthcare
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" class="bottom-nav" role="navigation" aria-label="Mobile navigation"></nav>
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="/js/pages/settings.js"></script>
+</body>
+</html>
