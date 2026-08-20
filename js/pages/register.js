@@ -185,6 +185,7 @@ const RegisterPage = (() => {
         };
 
         const response = await AuthService.register(formData);
+
         showToast('success', 'Account Created!', 'Welcome to HealthMind AI. Redirecting...');
 
         const role = response.user?.role || 'patient';
@@ -219,16 +220,18 @@ const RegisterPage = (() => {
               showError(fieldId, Array.isArray(details[key]) ? details[key][0] : details[key]);
             }
           });
+        } else if (/already registered|already exists/i.test(error.message || '')) {
+          showError('email', 'An account with this email already exists.');
         }
       }
     });
 
-    document.getElementById('google-register')?.addEventListener('click', () => {
-      window.location.href = '/api/auth/oauth/google';
-    });
-
-    document.getElementById('apple-register')?.addEventListener('click', () => {
-      window.location.href = '/api/auth/oauth/apple';
+    document.getElementById('google-register')?.addEventListener('click', async () => {
+      try {
+        await AuthService.loginWithGoogle();
+      } catch (error) {
+        App.handleError(error);
+      }
     });
 
     App.hideLoading();

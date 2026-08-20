@@ -25,7 +25,7 @@ class RoleUpdate(BaseModel):
     role: UserRole
 
 
-async def _get_user(db: AsyncSession, user_id: int) -> User:
+async def _get_user(db: AsyncSession, user_id: str) -> User:
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -60,13 +60,13 @@ async def list_users(
 
 @router.patch('/users/{user_id}/status')
 async def update_user_status(
-    user_id: int,
+    user_id: str,
     payload: StatusUpdate,
     current_user: User = Depends(require_roles('admin')),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
 ) -> dict[str, Any]:
-    if user_id == current_user.id:
+    if user_id == str(current_user.id):
         raise ApiException('VALIDATION_ERROR', 'You cannot disable your own account.')
     user = await _get_user(db, user_id)
     user.is_active = payload.is_active
@@ -80,13 +80,13 @@ async def update_user_status(
 
 @router.patch('/users/{user_id}/role')
 async def update_user_role(
-    user_id: int,
+    user_id: str,
     payload: RoleUpdate,
     current_user: User = Depends(require_roles('admin')),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
 ) -> dict[str, Any]:
-    if user_id == current_user.id:
+    if user_id == str(current_user.id):
         raise ApiException('VALIDATION_ERROR', 'You cannot change your own role.')
     user = await _get_user(db, user_id)
     user.role = payload.role

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, date
 
 from sqlalchemy import Boolean, Column, DateTime, Date, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.base import Base
 
@@ -11,7 +12,7 @@ class Medication(Base):
     __tablename__ = 'medications'
 
     id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
+    patient_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False, index=True)
     name = Column(String(255), nullable=False)
     dosage = Column(String(120), nullable=False)
     frequency = Column(String(120), nullable=False)

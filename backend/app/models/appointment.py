@@ -4,6 +4,7 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Date, Enum, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.base import Base
 
@@ -21,14 +22,14 @@ class Appointment(Base):
     __tablename__ = 'appointments'
 
     id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
-    doctor_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
+    patient_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False, index=True)
+    doctor_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False, index=True)
     specialty = Column(String(120), nullable=True)
     date = Column(Date, nullable=False, index=True)
     time = Column(String(8), nullable=False)  # HH:MM 24h
     reason = Column(Text, nullable=True)
     status = Column(
-        Enum(AppointmentStatus, native_enum=False),
+        Enum(AppointmentStatus, native_enum=False, values_callable=lambda cls: [e.value for e in cls]),
         default=AppointmentStatus.SCHEDULED,
         nullable=False,
         index=True,

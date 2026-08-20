@@ -30,11 +30,17 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else 'unknown'
 
 
-def rate_limit(requests_per_minute: int):
+def rate_limit(requests_per_minute: int, fail_closed: bool = False):
     """Dependency factory: limit requests from an IP per minute.
 
     Uses Redis when available for horizontal correctness, falling back to an
     in-process sliding window so the app still works in dev/single-instance.
+
+    `fail_closed=True` rejects the request outright when Redis is unreachable,
+    instead of falling back to a per-process window that's ineffective across
+    multiple workers. Reserved for limits whose absence is actually dangerous
+    (login/credential-stuffing) — most limits should stay fail-open so a
+    transient Redis blip doesn't take the whole API down.
     """
 
     async def dependency(request: Request) -> None:
@@ -72,7 +78,14 @@ def rate_limit(requests_per_minute: int):
         except Exception:
             pass
 
-        # Redis unavailable -> in-process fallback
+        if fail_closed:
+            logger.warning(
+                'Redis unreachable; rejecting request from %s for a fail-closed rate limit.',
+                _client_ip(request),
+            )
+            raise RateLimitError('Too many requests. Please try again shortly.')
+
+        # Redis unavailable -> in-process fallback (fail-open limits only)
         async with _get_lock():
             events = _memory.get(key, [])
             events = [ts for ts in events if now - ts < window]

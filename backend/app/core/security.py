@@ -1,80 +1,60 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-import secrets
+import time
 from typing import Any
 
-import bcrypt
+import httpx
 from jose import jwt
 
 from app.core.config import settings
 
-
-def hash_password(password: str) -> str:
-    """Hash a plaintext password using bcrypt.
-
-    Uses the bcrypt package directly. passlib 1.7.x is incompatible with
-    modern bcrypt releases (>= 4.1), so it is intentionally avoided here.
-    """
-    password_bytes = password.encode('utf-8')
-    # bcrypt only uses the first 72 bytes; truncate to avoid a hard error.
-    if len(password_bytes) > 72:
-        password_bytes = password_bytes[:72]
-    return bcrypt.hashpw(password_bytes, bcrypt.gensalt(rounds=settings.bcrypt_rounds)).decode('utf-8')
+_JWKS_CACHE_TTL_SECONDS = 3600
+_jwks_cache: dict[str, Any] = {'keys': [], 'fetched_at': 0.0}
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plaintext password against a bcrypt hash."""
-    try:
-        password_bytes = plain_password.encode('utf-8')
-        if len(password_bytes) > 72:
-            password_bytes = password_bytes[:72]
-        return bcrypt.checkpw(password_bytes, hashed_password.encode('utf-8'))
-    except (ValueError, TypeError):
-        return False
+async def _fetch_jwks() -> list[dict]:
+    """Fetch this Supabase project's published signing keys.
+
+    Supabase's newer projects sign user session tokens with an asymmetric
+    key (ES256/ECC P-256 here) rather than a single shared HS256 secret —
+    verification means matching the token's `kid` against Supabase's public
+    JWKS, not decoding with a static secret."""
+    url = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.get(url)
+        resp.raise_for_status()
+    return resp.json().get('keys', [])
 
 
-def create_access_token(subject: dict[str, Any]) -> str:
-    now = datetime.utcnow()
-    payload = {
-        **subject,
-        'exp': now + timedelta(minutes=settings.jwt_access_expire_minutes),
-        'iat': now,
-        'sub': subject.get('sub'),
-        'type': 'access',
-    }
-    return jwt.encode(payload, settings.jwt_secret_key.get_secret_value(), algorithm=settings.jwt_algorithm)
+async def _get_jwks(force_refresh: bool = False) -> list[dict]:
+    now = time.monotonic()
+    stale = (now - _jwks_cache['fetched_at']) > _JWKS_CACHE_TTL_SECONDS
+    if force_refresh or not _jwks_cache['keys'] or stale:
+        _jwks_cache['keys'] = await _fetch_jwks()
+        _jwks_cache['fetched_at'] = now
+    return _jwks_cache['keys']
 
 
-def create_refresh_token(subject: dict[str, Any]) -> str:
-    now = datetime.utcnow()
-    payload = {
-        **subject,
-        'exp': now + timedelta(days=settings.jwt_refresh_expire_days),
-        'iat': now,
-        'sub': subject.get('sub'),
-        'type': 'refresh',
-        'jti': secrets.token_hex(16),
-    }
-    return jwt.encode(payload, settings.jwt_secret_key.get_secret_value(), algorithm=settings.jwt_algorithm)
+async def verify_supabase_token(token: str) -> dict[str, Any]:
+    """Decode and validate a Supabase Auth access token against the
+    project's published JWKS. No secret is configured locally — the public
+    keys are fetched (and cached) from Supabase itself, refetched once if a
+    token's `kid` isn't found, to tolerate key rotation."""
+    unverified_header = jwt.get_unverified_header(token)
+    kid = unverified_header.get('kid')
 
+    keys = await _get_jwks()
+    matching = next((k for k in keys if k.get('kid') == kid), None)
+    if matching is None:
+        keys = await _get_jwks(force_refresh=True)
+        matching = next((k for k in keys if k.get('kid') == kid), None)
+    if matching is None:
+        from jose import JWTError
+        raise JWTError(f'No signing key found for kid={kid!r}.')
 
-def decode_token(token: str) -> dict[str, Any]:
-    """Decode and validate a JWT. Raises JWTError when invalid/expired."""
     return jwt.decode(
         token,
-        settings.jwt_secret_key.get_secret_value(),
-        algorithms=[settings.jwt_algorithm],
+        matching,
+        algorithms=['ES256', 'RS256'],
+        audience='authenticated',
     )
-
-
-def create_one_time_token(subject: dict[str, Any], expire_minutes: int) -> tuple[str, str]:
-    """Create a single-use opaque token plus its bcrypt hash.
-
-    Returns (raw_token, token_hash). The raw token is returned to the user
-    (e.g. embedded in an email link); only the hash is stored server-side so a
-    database leak does not reveal usable reset tokens.
-    """
-    raw = secrets.token_urlsafe(32)
-    token_hash = hash_password(raw)
-    return raw, token_hash

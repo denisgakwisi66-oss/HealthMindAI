@@ -23,7 +23,6 @@ const Accessibility = (() => {
     setupSkipLinks();
     setupReducedMotion();
     setupScreenReaderAnnouncements();
-    console.log('♿ Accessibility enhancements complete');
   };
 
   const detectSystemPreferences = () => {

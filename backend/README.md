@@ -7,16 +7,43 @@ project root (where `index.html`, `login.html`, `dashboard.html`, etc. live) at
 `/`, so you only need to run the backend to get the whole app: open
 `http://localhost:8000` in your browser and the API is available under `/api`.
 
+Authentication, sessions, and password reset are handled by **Supabase Auth**
+end-to-end — the frontend talks to Supabase directly for sign-up/login/reset,
+and this backend only verifies the resulting tokens and owns the
+application-specific data (appointments, records, medications, etc.), stored
+in Supabase's Postgres.
+
 ## Setup
 
-1. Copy `.env.example` to `.env`.
-2. Fill in the required environment variables (at minimum a working
-   `DATABASE_URL` for auth endpoints, `JWT_SECRET_KEY`, `APP_SECRET_KEY`).
+1. Create a Supabase project (see **Supabase project setup** below) and run
+   the schema bootstrap.
+2. Copy `.env.example` to `.env` and fill in every `SUPABASE_*` value from
+   your project's dashboard, plus a `DATABASE_URL` pointing at its Postgres
+   connection string and a `GEMINI_API_KEY`.
 3. Install dependencies:
 
 ```bash
 python -m pip install -r requirements.txt
 ```
+
+## Supabase project setup
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. **SQL Editor** → run the schema bootstrap script (ask whoever ran the
+   FURPS/Supabase migration for the current copy, or find it in
+   `backend/alembic/versions/` — the initial revision contains the same SQL).
+3. **Authentication → Providers** → confirm Email/Password is enabled;
+   enable Google there if you want the Google sign-in button to work.
+4. **Settings → API** → copy the **Project URL**, **anon/publishable key**,
+   and **service_role/secret key**. No separate JWT secret is needed — this
+   app verifies session tokens against the project's public JWKS at runtime
+   (`app/core/security.py`), which works for both the legacy shared-secret
+   projects and the newer asymmetric-key ones.
+5. **Settings → Database → Connection string** → copy either the direct or
+   pooled connection string for `DATABASE_URL` (asyncpg driver:
+   `postgresql+asyncpg://...`).
+6. To create demo accounts (patient/doctor/admin), run `python seed.py` from
+   `backend/` once `.env` is filled in.
 
 ## Run Locally (Linux / macOS / Windows)
 
@@ -27,27 +54,12 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 Then open <http://localhost:8000>.
 
-- The frontend pages are served from the same Django-less FastAPI app.
+- The frontend pages are served from the same FastAPI app.
 - The frontend API client (`js/services/api.js`) uses a **relative `/api`**
   base by default, so no CORS setup is needed when served from the backend.
   Set `VITE_API_URL` if you serve the frontend from a separate origin (Vite).
-
-### Database
-
-Auth endpoints (login / register / profile) need PostgreSQL. The app will
-auto-create its tables on startup when `DATABASE_URL` is reachable. To create
-demo accounts:
-
-```bash
-cd backend
-python seed.py
-#   patient: patient@healthmind.ai / Demo@1234
-#   doctor:  doctor@healthmind.ai   / Demo@1234
-#   admin:   admin@healthmind.ai    / Demo@1234
-```
-
-Redis and Firebase are optional and only power `/api/system/status` and
-push notifications / Celery; the app runs without them.
+- The frontend gets its Supabase URL/anon key from `GET /api/config/public`
+  (backed by your `.env`) — never hardcode them into the shipped JS.
 
 ## Run with Docker
 
@@ -56,17 +68,29 @@ cd backend
 docker compose up --build
 ```
 
-(With Docker Compose, keep `DATABASE_URL` / `REDIS_URL` pointing at the `db`
-and `redis` service hostnames, as in the commented variants of `.env.example`.)
+There's no local database service — `DATABASE_URL` points at Supabase's
+Postgres in every environment. `docker-compose.yml` only runs the app itself
+plus Redis (for rate limiting/Celery).
 
 ### Migrations
 
-Tables are auto-created on startup for development. If you prefer Alembic:
+Schema changes go through Alembic, pointed at `DATABASE_URL`:
 
 ```bash
 cd backend
 alembic upgrade head
 ```
+
+On a **fresh** Supabase project where you already ran the SQL bootstrap
+script by hand in the SQL Editor, stamp it instead of re-running the (albeit
+idempotent) SQL:
+
+```bash
+alembic stamp head
+```
+
+Future schema changes: `alembic revision --autogenerate -m "..."`, review the
+generated file, then `alembic upgrade head`.
 
 ### Tests
 
@@ -75,8 +99,15 @@ cd backend
 pytest
 ```
 
+Tests need a real Postgres (not SQLite — the schema uses native `uuid`
+columns) with a stub `auth.users` table; see
+`.github/workflows/backend-tests.yml` for the exact setup, or run against a
+disposable Supabase branch/project.
+
 ## API Compatibility
 
 The frontend expects backend routes under `/api/...`. See `app/api/routes/`
 for the available endpoints (auth, users, dashboard, ai, appointments,
-medications, notifications, health, system).
+medications, notifications, health, system, admin). Sign-up, login, logout,
+and password reset are **not** backend routes — the frontend calls Supabase
+directly for those (see `js/services/auth.js`).

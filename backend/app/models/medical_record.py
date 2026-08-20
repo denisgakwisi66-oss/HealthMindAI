@@ -4,6 +4,7 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.base import Base
 
@@ -21,11 +22,11 @@ class MedicalRecord(Base):
     __tablename__ = 'medical_records'
 
     id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
-    doctor_id = Column(Integer, ForeignKey('users.id'), nullable=True, index=True)
+    patient_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False, index=True)
+    doctor_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=True, index=True)
     title = Column(String(255), nullable=False)
     record_type = Column(
-        Enum(RecordType, native_enum=False),
+        Enum(RecordType, native_enum=False, values_callable=lambda cls: [e.value for e in cls]),
         default=RecordType.OTHER,
         nullable=False,
     )

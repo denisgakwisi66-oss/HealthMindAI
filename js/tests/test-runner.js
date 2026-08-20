@@ -313,3 +313,5 @@ const TestRunner = (() => {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = TestRunner;
 }
+
+export default TestRunner;

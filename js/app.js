@@ -13,7 +13,7 @@ import Theme from './theme.js';
 import Performance from './performance.js';
 import Security from './security.js';
 import Accessibility from './accessibility.js';
-import Toast from './toast.js';
+import Toast, { showToast } from './toast.js';
 
 // ===== APP STATE =====
 
@@ -31,9 +31,9 @@ const App = (() => {
 
   // ===== INITIALIZATION =====
 
-  const init = async () => {
-    console.log('🏥 HealthMind AI — Initializing...');
+  const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1');
 
+  const init = async () => {
     // 1. Initialize security
     Security.init();
 
@@ -68,9 +68,9 @@ const App = (() => {
 
     // 6. Setup navigation
     if (isAuthenticated) {
-      Navigation.init(role, true);
+      Navigation.init(role, true, AuthService.getUser());
     } else {
-      Navigation.init('patient', false);
+      Navigation.init('patient', false, null);
     }
 
     // 7. Setup auth event listeners
@@ -80,7 +80,7 @@ const App = (() => {
         window.location.href = '/login.html';
       } else if (event === 'login' || event === 'register') {
         const role = data.user?.role || 'patient';
-        Navigation.init(role, true);
+        Navigation.init(role, true, data.user);
         Accessibility.announce(`Welcome ${data.user?.full_name || 'User'}`);
       }
     });
@@ -91,21 +91,18 @@ const App = (() => {
     // 9. Setup global event listeners
     setupGlobalListeners();
 
-    // 10. Run tests in development
-    if (window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1')) {
+    // 10. Run tests in development only — never shipped to a real hostname.
+    if (isDev) {
       try {
-        const TestRunner = await import('./tests/test-runner.js');
-        await TestRunner.runAll();
-        console.log('✅ All tests passed');
+        const testRunnerModule = await import('./tests/test-runner.js');
+        await (testRunnerModule.default ?? testRunnerModule).runAll();
       } catch (error) {
-        console.warn('⚠️ Tests failed:', error);
+        console.warn('Dev test suite failed:', error);
       }
     }
 
     // 11. Hide loading
     hideLoading();
-
-    console.log('✅ HealthMind AI — Ready');
   };
 
   // ===== PAGE SCRIPTS =====
@@ -139,8 +136,9 @@ const App = (() => {
       for (const [key, path] of Object.entries(pages)) {
         if (page.includes(key)) {
           const module = await import(path);
-          if (module.init) {
-            await module.init();
+          const pageController = module.default ?? module;
+          if (pageController.init) {
+            await pageController.init();
           }
           break;
         }
@@ -169,7 +167,7 @@ const App = (() => {
 
     // Theme changes
     document.addEventListener('themechange', (e) => {
-      console.log('Theme changed to:', e.detail.theme);
+      if (isDev) console.log('Theme changed to:', e.detail.theme);
     });
 
     // Click outside sidebar to close on mobile
@@ -227,14 +225,21 @@ const App = (() => {
     }
   };
 
+  // ===== ERROR HANDLING =====
+
+  const handleError = (error) => {
+    const message = error?.message || 'Something went wrong. Please try again.';
+    return Toast.error('Error', message);
+  };
+
   // ===== PUBLIC API =====
 
   return {
     init,
     showLoading,
     hideLoading,
-    showToast: Toast.show,
-    handleError: Toast.error,
+    showToast,
+    handleError,
     elements,
   };
 })();

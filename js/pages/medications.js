@@ -5,11 +5,10 @@
  */
 
 import App from '/js/app.js';
-import AuthService from '/js/services/auth.js';
-import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
 import Toast from '/js/toast.js';
+import { escapeText as esc } from '/js/security.js';
 
 const Medications = (() => {
   // ===== STATE =====
@@ -43,9 +42,7 @@ const Medications = (() => {
 
   const init = async () => {
     try {
-      const userRole = AuthService.getRole() || 'patient';
-      Navigation.init(userRole, true);
-
+      // App.init() already rendered navigation before this page script ran.
       await loadMedications();
       await loadAdherence();
 
@@ -130,19 +127,19 @@ const Medications = (() => {
         <div class="medication-card" data-id="${med.id}">
           <div class="med-icon">💊</div>
           <div class="med-info">
-            <div class="med-name">${med.name}</div>
+            <div class="med-name">${esc(med.name)}</div>
             <div class="med-details">
-              <span>${med.dosage}</span>
+              <span>${esc(med.dosage)}</span>
               <span>•</span>
-              <span>${med.frequency}</span>
+              <span>${esc(med.frequency)}</span>
               <span>•</span>
-              <span>${med.instructions || 'No instructions'}</span>
+              <span>${esc(med.instructions) || 'No instructions'}</span>
             </div>
             ${schedule ? `
               <div class="med-schedule">
                 ${schedule.map(s => `
-                  <div class="dose-dot ${s.status}" title="${s.time} - ${s.status}">
-                    ${s.time}
+                  <div class="dose-dot ${esc(s.status)}" title="${esc(s.time)} - ${esc(s.status)}">
+                    ${esc(s.time)}
                   </div>
                 `).join('')}
               </div>

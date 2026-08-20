@@ -10,11 +10,16 @@ const ForgotPasswordPage = (() => {
     const successState = document.getElementById('success-state');
     const sentEmail = document.getElementById('sent-email');
     const emailError = document.getElementById('email-error');
+    const returnToLoginBtn = document.getElementById('return-to-login');
 
     if (!form || !emailInput || !resetBtn || !successState || !sentEmail || !emailError) {
       App.hideLoading();
       return;
     }
+
+    returnToLoginBtn?.addEventListener('click', () => {
+      window.location.href = '/login.html';
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();

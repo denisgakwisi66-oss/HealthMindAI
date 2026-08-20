@@ -108,7 +108,7 @@ const LoginPage = (() => {
         loginBtn.disabled = false;
         loginBtn.textContent = 'Log In';
 
-        if (error.status === 401) {
+        if (error.status === 401 || error.status === 400) {
           showError('email', 'Invalid email or password');
           showError('password', 'Please check your credentials');
         }
@@ -121,12 +121,12 @@ const LoginPage = (() => {
       if (rememberMe) rememberMe.checked = true;
     }
 
-    document.getElementById('google-login')?.addEventListener('click', () => {
-      window.location.href = '/api/auth/oauth/google';
-    });
-
-    document.getElementById('apple-login')?.addEventListener('click', () => {
-      window.location.href = '/api/auth/oauth/apple';
+    document.getElementById('google-login')?.addEventListener('click', async () => {
+      try {
+        await AuthService.loginWithGoogle();
+      } catch (error) {
+        App.handleError(error);
+      }
     });
 
     App.hideLoading();

@@ -1,13 +1,10 @@
 import App from '/js/app.js';
-import AuthService from '/js/services/auth.js';
-import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 
 const MedicalRecords = (() => {
   const init = async () => {
     try {
-      const role = AuthService.getRole() || 'patient';
-      Navigation.init(role, true);
+      // App.init() already rendered navigation before this page script ran.
       document.querySelector('.theme-toggle')?.addEventListener('click', Theme.toggle);
       App.hideLoading();
     } catch (error) {

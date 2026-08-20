@@ -288,6 +288,7 @@ async def ai_suggestions(context: str | None = None) -> dict[str, Any]:
 @router.post('/actions')
 async def ai_actions(
     payload: ActionRequest,
+    current_user: User = Depends(get_current_user),
 ) -> dict[str, Any]:
     """AI-requested actions.
 

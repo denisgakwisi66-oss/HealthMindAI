@@ -7,8 +7,6 @@
  */
 
 import App from '/js/app.js';
-import AuthService from '/js/services/auth.js';
-import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
 
@@ -236,8 +234,7 @@ const AIAssistant = (() => {
     // ===== INITIALIZE =====
     const init = async () => {
         try {
-            const userRole = AuthService.getRole() || 'patient';
-            Navigation.init(userRole, true);
+            // App.init() already rendered navigation before this page script ran.
 
             // Check network status
             setupNetworkListeners();
@@ -253,9 +250,6 @@ const AIAssistant = (() => {
 
             // Hide loading
             App.hideLoading();
-
-            console.log('🤖 AI Assistant initialized');
-            
 
         } catch (error) {
             App.handleError(error);
@@ -485,7 +479,7 @@ const AIAssistant = (() => {
             try {
                 await saveConversation(message, responseMsg);
             } catch (e) {
-                console.log('Conversation not saved');
+                console.warn('Conversation not saved:', e);
             }
         }
 
@@ -509,7 +503,7 @@ const AIAssistant = (() => {
             try {
                 await saveConversation(message, offlineMsg);
             } catch (e) {
-                console.log('Conversation not saved');
+                console.warn('Conversation not saved:', e);
             }
         }
 
@@ -524,8 +518,6 @@ const AIAssistant = (() => {
             // Show typing indicator
             showTyping();
 
-            console.log('🤖 Connecting to Gemini AI...');
-            
 
             // Send to backend which uses Gemini
             const response = await API.post('/ai/chat', {

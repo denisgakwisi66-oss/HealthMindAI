@@ -6,12 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from loguru import logger
 from starlette.requests import Request
 from starlette.status import HTTP_422_UNPROCESSABLE_CONTENT
 
 from app.api.routes.health import router as health_router
-from app.api.routes.system import router as system_router
+from app.api.routes.system import router as system_router, config_router
 from app.api.routes.auth import auth_router, users_router
 from app.api.routes.appointments import router as appointments_router
 from app.api.routes.emergency import router as emergency_router
@@ -21,32 +20,19 @@ from app.api.routes.notifications import router as notifications_router
 from app.api.routes.ai_assistant import router as ai_router
 from app.api.routes.dashboards import router as dashboards_router
 from app.api.routes.admin import router as admin_router
+from app.api.routes.notify import router as notify_router
 from app.core.config import settings
 from app.core.exceptions import ApiException
 from app.core.logging import configure_logging
 
-# Import models so metadata is populated before create_all runs.
-from app.db.base import Base  # noqa: F401
-from app.db.session import data_engine
-import app.models  # noqa: F401  (imports every model into Base.metadata)
+# Import models so Alembic (and anything introspecting metadata) sees every
+# table. Schema itself is owned by the Supabase SQL bootstrap + Alembic
+# migrations, not created here — see backend/alembic/.
+import app.models  # noqa: F401
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Create database tables on startup when the database is reachable.
-
-    Failures are logged as warnings so the server can still boot and serve
-    the frontend and mock-data endpoints even when the DB is not configured.
-    """
-    try:
-        async with data_engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        logger.info('Database tables ensured (create_all)')
-    except Exception as exc:
-        logger.warning(
-            f'Database is unavailable - auth endpoints will be offline until '
-            f'DATABASE_URL is configured. ({type(exc).__name__}: {exc})'
-        )
     yield
 
 
@@ -80,15 +66,18 @@ def create_app() -> FastAPI:
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response.headers['Permissions-Policy'] = 'geolocation=(self), camera=(), microphone=()'
         response.headers['Content-Security-Policy'] = (
-            "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https:; "
-            "connect-src 'self' https://generativelanguage.googleapis.com; "
-            "font-src 'self' data:; frame-ancestors 'none'"
+            "default-src 'self'; "
+            f"script-src 'self' https://esm.sh https://cdn.jsdelivr.net https://www.gstatic.com; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+            "img-src 'self' data: https:; "
+            f"connect-src 'self' {settings.supabase_url} https://esm.sh https://generativelanguage.googleapis.com; "
+            "font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none'"
         )
         return response
 
     app.include_router(health_router, prefix='/api')
     app.include_router(system_router, prefix='/api')
+    app.include_router(config_router, prefix='/api')
     app.include_router(auth_router, prefix='/api')
     app.include_router(users_router, prefix='/api')
     app.include_router(emergency_router)
@@ -99,6 +88,7 @@ def create_app() -> FastAPI:
     app.include_router(ai_router)
     app.include_router(dashboards_router)
     app.include_router(admin_router)
+    app.include_router(notify_router)
 
     frontend_dir = Path(__file__).resolve().parents[2]
     app.mount('/', StaticFiles(directory=str(frontend_dir), html=True), name='frontend')

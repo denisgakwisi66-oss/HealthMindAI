@@ -5,11 +5,10 @@
  */
 
 import App from '/js/app.js';
-import AuthService from '/js/services/auth.js';
-import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
 import Toast from '/js/toast.js';
+import { escapeText as esc } from '/js/security.js';
 
 const Appointments = (() => {
   // ===== STATE =====
@@ -48,9 +47,7 @@ const Appointments = (() => {
 
   const init = async () => {
     try {
-      // Setup navigation
-      const userRole = AuthService.getRole() || 'patient';
-      Navigation.init(userRole, true);
+      // App.init() already rendered navigation before this page script ran.
 
       // Load data
       await Promise.all([
@@ -200,18 +197,18 @@ const Appointments = (() => {
           <span class="month">${formatMonth(appt.date)}</span>
         </div>
         <div class="appointment-info">
-          <div class="doctor-name">${appt.doctor_name || 'Doctor'}</div>
+          <div class="doctor-name">${esc(appt.doctor_name) || 'Doctor'}</div>
           <div class="appointment-details">
-            <span>${appt.specialty || 'General'}</span>
+            <span>${esc(appt.specialty) || 'General'}</span>
             <span>•</span>
-            <span>${appt.time || 'Time TBD'}</span>
+            <span>${esc(appt.time) || 'Time TBD'}</span>
             <span>•</span>
-            <span>${appt.location || 'Location TBD'}</span>
+            <span>${esc(appt.location) || 'Location TBD'}</span>
           </div>
         </div>
         <div class="appointment-status">
-          <span class="badge status-${appt.status || 'upcoming'}">
-            ${appt.status || 'Upcoming'}
+          <span class="badge status-${esc(appt.status) || 'upcoming'}">
+            ${esc(appt.status) || 'Upcoming'}
           </span>
         </div>
         <div class="appointment-actions">

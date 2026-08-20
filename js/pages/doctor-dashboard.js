@@ -5,11 +5,11 @@
  */
 
 import App from '/js/app.js';
-import AuthService from '/js/services/auth.js';
-import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
 import Toast from '/js/toast.js';
+import { escapeText as esc } from '/js/security.js';
+import { requireRole } from '/js/utils/auth-guard.js';
 
 const DoctorDashboard = (() => {
   // ===== STATE =====
@@ -34,15 +34,11 @@ const DoctorDashboard = (() => {
 
   const init = async () => {
     try {
-      // Check if user is a doctor
-      const role = AuthService.getRole();
-      if (role !== 'doctor') {
-        window.location.href = '/dashboard.html';
-        return;
-      }
+      if (!requireRole(['doctor', 'admin'])) return;
 
-      Navigation.init('doctor', true);
-
+      // App.init() already rendered navigation (with the fetched user)
+      // before this page script ran — re-calling it here without that
+      // user object would blank out the sidebar's name/avatar.
       await loadDashboard();
 
       App.hideLoading();
@@ -115,16 +111,16 @@ const DoctorDashboard = (() => {
       
       return `
         <div class="schedule-item" data-id="${appt.id}">
-          <div class="schedule-time">${appt.time || 'TBD'}</div>
+          <div class="schedule-time">${esc(appt.time) || 'TBD'}</div>
           <div class="schedule-patient">
-            <div class="patient-name">${appt.patient_name || 'Patient'}</div>
+            <div class="patient-name">${esc(appt.patient_name) || 'Patient'}</div>
             <div class="patient-details">
-              ${appt.reason || 'General checkup'} • ${appt.duration || '30 min'}
+              ${esc(appt.reason) || 'General checkup'} • ${esc(appt.duration) || '30 min'}
             </div>
           </div>
           <div class="schedule-status">
             <span class="badge ${statusColors[appt.status] || 'badge-primary'}">
-              ${appt.status || 'Scheduled'}
+              ${esc(appt.status) || 'Scheduled'}
             </span>
           </div>
           <div class="schedule-actions">
@@ -168,15 +164,15 @@ const DoctorDashboard = (() => {
     }
 
     container.innerHTML = patients.slice(0, 5).map(patient => {
-      const initials = patient.name.split(' ').map(n => n[0]).join('');
-      
+      const initials = esc(patient.name.split(' ').map(n => n[0]).join(''));
+
       return `
         <div class="patient-item" data-id="${patient.id}">
           <div class="patient-avatar">${initials}</div>
           <div class="patient-info">
-            <div class="patient-name">${patient.name}</div>
+            <div class="patient-name">${esc(patient.name)}</div>
             <div class="patient-meta">
-              ${patient.age || '--'} years • ${patient.last_visit || 'New patient'}
+              ${esc(patient.age) || '--'} years • ${esc(patient.last_visit) || 'New patient'}
             </div>
           </div>
           <div class="patient-actions">

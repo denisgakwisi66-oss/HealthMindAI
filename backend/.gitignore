@@ -7,8 +7,6 @@ __pycache__/
 .env.local
 .env.*.local
 .DS_Store
-.alembic/
-/alembic/versions/
 # Local SQLite database (created automatically by the app / seed.py)
 *.db
 *.db-journal

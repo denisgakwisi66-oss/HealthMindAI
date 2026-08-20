@@ -10,6 +10,7 @@ import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
 import Toast from '/js/toast.js';
+import { escapeText as esc } from '/js/security.js';
 
 const Notifications = (() => {
   // ===== STATE =====
@@ -32,9 +33,7 @@ const Notifications = (() => {
 
   const init = async () => {
     try {
-      const userRole = AuthService.getRole() || 'patient';
-      Navigation.init(userRole, true);
-
+      // App.init() already rendered navigation before this page script ran.
       await loadNotifications();
 
       setupEventListeners();
@@ -105,11 +104,11 @@ const Notifications = (() => {
       return `
         <div class="notification-item ${isUnread ? 'unread' : ''}" data-id="${notif.id}">
           ${isUnread ? '<span class="unread-dot"></span>' : ''}
-          <div class="notification-icon">${icon}</div>
+          <div class="notification-icon">${esc(icon)}</div>
           <div class="notification-content">
-            <div class="notification-title">${notif.title}</div>
-            <div class="notification-message">${notif.message}</div>
-            <span class="notification-time">${timeAgo}</span>
+            <div class="notification-title">${esc(notif.title)}</div>
+            <div class="notification-message">${esc(notif.message)}</div>
+            <span class="notification-time">${esc(timeAgo)}</span>
           </div>
           <div class="notification-actions">
             ${isUnread ? `

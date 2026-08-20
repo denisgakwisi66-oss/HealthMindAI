@@ -9,6 +9,8 @@ const Performance = (() => {
 
   let metrics = {};
   let isMonitoring = false;
+  const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const devLog = (...args) => { if (isDev) console.log(...args); };
 
   // ===== INITIALIZE =====
 
@@ -20,7 +22,7 @@ const Performance = (() => {
         const entries = entryList.getEntries();
         const lastEntry = entries[entries.length - 1];
         metrics.lcp = lastEntry.startTime;
-        console.log(`LCP: ${Math.round(lastEntry.startTime)}ms`);
+        devLog(`LCP: ${Math.round(lastEntry.startTime)}ms`);
       });
       lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
 
@@ -29,7 +31,7 @@ const Performance = (() => {
         const entries = entryList.getEntries();
         entries.forEach(entry => {
           metrics.fid = entry.processingStart - entry.startTime;
-          console.log(`FID: ${Math.round(metrics.fid)}ms`);
+          devLog(`FID: ${Math.round(metrics.fid)}ms`);
         });
       });
       fidObserver.observe({ type: 'first-input', buffered: true });
@@ -42,7 +44,7 @@ const Performance = (() => {
             metrics.cls = (metrics.cls || 0) + entry.value;
           }
         });
-        console.log(`CLS: ${(metrics.cls || 0).toFixed(3)}`);
+        devLog(`CLS: ${(metrics.cls || 0).toFixed(3)}`);
       });
       clsObserver.observe({ type: 'layout-shift', buffered: true });
     }
@@ -58,7 +60,7 @@ const Performance = (() => {
 
     // Log performance on page unload
     window.addEventListener('beforeunload', () => {
-      console.log('Performance Metrics:', metrics);
+      devLog('Performance Metrics:', metrics);
     });
   };
 
@@ -69,7 +71,7 @@ const Performance = (() => {
     const result = fn();
     const duration = performance.now() - start;
     
-    console.log(`⏱️ ${name}: ${Math.round(duration)}ms`);
+    devLog(`⏱️ ${name}: ${Math.round(duration)}ms`);
     
     if (duration > 100) {
       console.warn(`⚠️ ${name} took ${Math.round(duration)}ms - consider optimizing`);
@@ -83,7 +85,7 @@ const Performance = (() => {
     const result = await fn();
     const duration = performance.now() - start;
     
-    console.log(`⏱️ ${name}: ${Math.round(duration)}ms`);
+    devLog(`⏱️ ${name}: ${Math.round(duration)}ms`);
     
     if (duration > 100) {
       console.warn(`⚠️ ${name} took ${Math.round(duration)}ms - consider optimizing`);

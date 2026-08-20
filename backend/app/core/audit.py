@@ -47,9 +47,9 @@ async def log_audit(
             ip = forwarded.split(',')[0].strip()
         user_agent = request.headers.get('user-agent')
 
-        payload = {
+    payload = {
         'action': action,
-        'user_id': user_id,
+        'user_id': str(user_id) if user_id is not None else None,
         'resource_type': resource_type,
         'resource_id': str(resource_id) if resource_id is not None else None,
         'details': json.dumps(details or {}),

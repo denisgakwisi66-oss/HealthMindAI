@@ -4,6 +4,8 @@
  * ============================================
  */
 
+import { escapeText as esc } from './security.js';
+
 const Navigation = (() => {
   // ===== NAVIGATION CONFIG =====
 
@@ -83,6 +85,7 @@ const Navigation = (() => {
   let currentPath = window.location.pathname;
   let isAuthenticated = false;
   let userBadgeCount = 0;
+  let currentUser = null;
 
   // ===== NAVIGATION RENDERERS =====
 
@@ -154,8 +157,8 @@ const Navigation = (() => {
             <span class="text-primary font-semibold">${getUserInitials()}</span>
           </div>
           <div class="flex-1 min-w-0">
-            <div class="font-medium text-sm truncate">${getUserName()}</div>
-            <div class="text-xs text-secondary truncate capitalize">${role}</div>
+            <div class="font-medium text-sm truncate">${esc(getUserName())}</div>
+            <div class="text-xs text-secondary truncate capitalize">${esc(role)}</div>
           </div>
           <button class="theme-toggle" aria-label="Toggle theme">
             <span class="icon-sun">☀️</span>
@@ -246,16 +249,7 @@ const Navigation = (() => {
 
   // ===== USER HELPERS =====
 
-  const getUserName = () => {
-    try {
-      const userStr = localStorage.getItem('healthmind_auth_user');
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        return user.full_name || user.name || 'User';
-      }
-    } catch (e) {}
-    return 'User';
-  };
+  const getUserName = () => currentUser?.full_name || 'User';
 
   const getUserInitials = () => {
     const name = getUserName();
@@ -264,9 +258,10 @@ const Navigation = (() => {
 
   // ===== NAVIGATION INITIALIZATION =====
 
-  const init = (role = 'patient', authenticated = false) => {
+  const init = (role = 'patient', authenticated = false, user = null) => {
     currentRole = role;
     isAuthenticated = authenticated;
+    currentUser = user;
 
     // Render sidebar
     const sidebarContainer = document.getElementById('sidebar');

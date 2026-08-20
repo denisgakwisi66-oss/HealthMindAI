@@ -5,11 +5,11 @@
  */
 
 import App from '/js/app.js';
-import AuthService from '/js/services/auth.js';
-import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
 import Toast from '/js/toast.js';
+import { escapeText as esc } from '/js/security.js';
+import { requireRole } from '/js/utils/auth-guard.js';
 
 const AdminDashboard = (() => {
   // ===== STATE =====
@@ -31,15 +31,11 @@ const AdminDashboard = (() => {
 
   const init = async () => {
     try {
-      // Check if user is admin
-      const role = AuthService.getRole();
-      if (role !== 'admin') {
-        window.location.href = '/dashboard.html';
-        return;
-      }
+      if (!requireRole(['admin'])) return;
 
-      Navigation.init('admin', true);
-
+      // App.init() already rendered navigation (with the fetched user)
+      // before this page script ran — re-calling it here without that
+      // user object would blank out the sidebar's name/avatar.
       await loadDashboard();
 
       App.hideLoading();
@@ -96,12 +92,12 @@ const AdminDashboard = (() => {
       
       return `
         <div class="activity-item">
-          <div class="activity-icon">${item.icon || '📌'}</div>
+          <div class="activity-icon">${esc(item.icon) || '📌'}</div>
           <div class="activity-content">
-            <div class="activity-title">${item.title}</div>
-            <div class="activity-details">${item.details}</div>
+            <div class="activity-title">${esc(item.title)}</div>
+            <div class="activity-details">${esc(item.details)}</div>
           </div>
-          <div class="activity-time">${timeAgo}</div>
+          <div class="activity-time">${esc(timeAgo)}</div>
         </div>
       `;
     }).join('');

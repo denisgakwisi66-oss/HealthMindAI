@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, time
 
 from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Text, Time, UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.base import Base
 
@@ -13,7 +14,7 @@ class Doctor(Base):
     __tablename__ = 'doctors'
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, unique=True, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False, unique=True, index=True)
     specialty = Column(String(120), nullable=False, index=True)
     bio = Column(Text, nullable=True)
     years_experience = Column(Integer, nullable=True)

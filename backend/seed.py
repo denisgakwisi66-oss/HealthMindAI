@@ -1,81 +1,70 @@
-"""Seed the HealthMind AI database with demo users.
+"""Seed Supabase Auth with demo accounts for local testing.
 
-Usage (from the backend/ directory, with your virtualenv active):
+Usage (from the backend/ directory, with your virtualenv active and
+backend/.env pointing at your Supabase project):
 
     python seed.py
 
-This creates three demo accounts (skipped if they already exist):
+Creates three demo accounts via the Supabase Admin API (skipped if they
+already exist). Their `public.users` row is created automatically by the
+`handle_new_user` database trigger, with the role read from `app_metadata`
+(the only role source the trigger trusts for anything other than 'patient').
 
     Patient: patient@healthmind.ai / Demo@1234
     Doctor:  doctor@healthmind.ai   / Demo@1234
     Admin:   admin@healthmind.ai    / Demo@1234
-
-The tables are created automatically if they do not exist yet.
 """
 
 import asyncio
 
-from sqlalchemy import select
+import httpx
 
-from app.api.routes.auth import user_to_dict
-from app.core.security import hash_password
-from app.db.base import Base
-from app.db.session import AsyncSessionLocal, data_engine
-from app.models.patient import Patient
-from app.models.user import User, UserRole
+from app.core.config import settings
 
 DEMO_USERS = [
-    {'email': 'patient@healthmind.ai', 'full_name': 'Demo Patient', 'role': UserRole.PATIENT},
-    {'email': 'doctor@healthmind.ai', 'full_name': 'Demo Doctor', 'role': UserRole.DOCTOR},
-    {'email': 'admin@healthmind.ai', 'full_name': 'Demo Admin', 'role': UserRole.ADMIN},
+    {'email': 'patient@healthmind.ai', 'full_name': 'Demo Patient', 'role': 'patient'},
+    {'email': 'doctor@healthmind.ai', 'full_name': 'Demo Doctor', 'role': 'doctor'},
+    {'email': 'admin@healthmind.ai', 'full_name': 'Demo Admin', 'role': 'admin'},
 ]
 DEMO_PASSWORD = 'Demo@1234'
 
 
 async def seed() -> None:
-    # Ensure tables exist
-    async with data_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
     created = []
     existing = []
 
-    async with AsyncSessionLocal() as session:
+    headers = {
+        'apikey': settings.supabase_service_role_key.get_secret_value(),
+        'Authorization': f'Bearer {settings.supabase_service_role_key.get_secret_value()}',
+        'Content-Type': 'application/json',
+    }
+
+    async with httpx.AsyncClient(base_url=f'{settings.supabase_url}/auth/v1', headers=headers, timeout=15) as client:
         for user_data in DEMO_USERS:
-            result = await session.execute(select(User).where(User.email == user_data['email']))
-            if result.first():
+            response = await client.post('/admin/users', json={
+                'email': user_data['email'],
+                'password': DEMO_PASSWORD,
+                'email_confirm': True,
+                'user_metadata': {'full_name': user_data['full_name']},
+                'app_metadata': {'role': user_data['role']},
+            })
+            if response.status_code == 200:
+                created.append(user_data)
+            elif response.status_code == 422 or 'already been registered' in response.text.lower():
                 existing.append(user_data['email'])
-                continue
-
-            user = User(
-                full_name=user_data['full_name'],
-                email=user_data['email'],
-                hashed_password=hash_password(DEMO_PASSWORD),
-                role=user_data['role'],
-                is_verified=True,
-                is_active=True,
-            )
-            session.add(user)
-            await session.flush()
-
-            if user.role == UserRole.PATIENT:
-                session.add(Patient(user_id=user.id))
-
-            created.append(user_to_dict(user))
-
-        await session.commit()
+            else:
+                print(f"Failed to create {user_data['email']}: {response.status_code} {response.text}")
 
     if created:
         print('Created users:')
         for user in created:
-            print(f'  - {user["email"]} ({user["role"]}) / {DEMO_PASSWORD}')
+            print(f"  - {user['email']} ({user['role']}) / {DEMO_PASSWORD}")
     if existing:
-        print(f'Skipped (already exist): {", ".join(existing)}')
-
+        print(f"Skipped (already exist): {', '.join(existing)}")
     if not created and not existing:
         print('Nothing to do.')
     else:
-        print(f'\nLogin at http://localhost:8000/login.html with the credentials above.')
+        print('\nLogin at http://localhost:8000/login.html with the credentials above.')
 
 
 if __name__ == '__main__':

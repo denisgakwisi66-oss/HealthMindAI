@@ -38,7 +38,7 @@ def _record_to_dict(r: MedicalRecord) -> dict[str, Any]:
     }
 
 
-async def _doctor_has_access(db: AsyncSession, doctor_id: int, patient_id: int) -> bool:
+async def _doctor_has_access(db: AsyncSession, doctor_id: str, patient_id: str) -> bool:
     r = await db.execute(select(Appointment.id).where(
         Appointment.doctor_id == doctor_id,
         Appointment.patient_id == patient_id,
@@ -89,7 +89,7 @@ async def _store_file(file: UploadFile, original_name: str) -> tuple[str, str, i
 
 @router.get('/medical-records')
 async def list_records(
-    patient_id: int | None = None,
+    patient_id: str | None = None,
     search: str | None = None,
     page: int = 1,
     page_size: int = 20,
@@ -130,7 +130,7 @@ async def create_record(
     title: str = Form(...),
     record_type: str = Form(...),
     notes: str = Form(''),
-    patient_id: int | None = Form(default=None),
+    patient_id: str | None = Form(default=None),
     file: UploadFile | None = File(default=None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

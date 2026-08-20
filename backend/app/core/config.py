@@ -21,7 +21,6 @@ class Settings(BaseSettings):
     app_env: str = Field('development')
     app_name: str = Field('HealthMind AI')
     app_version: str = Field('1.0.0')
-    app_secret_key: SecretStr
     app_debug: bool = Field(True)
 
     database_url: str
@@ -32,13 +31,16 @@ class Settings(BaseSettings):
     redis_url: str
     redis_db: int = Field(0)
 
-    jwt_secret_key: SecretStr
-    jwt_access_expire_minutes: int = Field(30)
-    jwt_refresh_expire_days: int = Field(7)
-    jwt_algorithm: str = Field('HS256')
+    # Supabase is the identity provider: Postgres lives on Supabase (via
+    # database_url above) and Auth/session/password-reset are handled entirely
+    # by Supabase, never by our own code. Session tokens are verified against
+    # this project's published JWKS (app/core/security.py) — no local secret.
+    supabase_url: str
+    supabase_anon_key: SecretStr
+    supabase_service_role_key: SecretStr
 
     gemini_api_key: SecretStr
-    gemini_model: str = Field('gemini-1.5-pro')
+    gemini_model: str = Field('gemini-3.6-flash')
     gemini_max_tokens: int = Field(2048)
     gemini_temperature: float = Field(0.7)
 
@@ -55,20 +57,21 @@ class Settings(BaseSettings):
     log_level: str = Field('INFO')
     log_json: bool = Field(False)
 
-    bcrypt_rounds: int = Field(12)
-
     default_page_size: int = Field(20)
     max_page_size: int = Field(100)
 
     smtp_host: str = Field('smtp.gmail.com')
+
     smtp_port: int = Field(587)
     smtp_user: SecretStr = Field(SecretStr(''))
     smtp_password: SecretStr = Field(SecretStr(''))
     smtp_from: str = Field('no-reply@healthmind.ai')
     use_tls: bool = Field(True)
 
-    # Where in-app / email notifications for system-wide emergency alerts go.
-    # MUST come from the environment, never be hard-coded in source.
+    # Where admin-facing notification emails go: emergency alerts, new
+    # appointments, appointment status changes, new registrations. One
+    # inbox for all operational notifications — MUST come from the
+    # environment, never be hard-coded in source.
     emergency_recipient: str = Field('')
 
     # Public URL of the application, used to build links inside emails.
@@ -85,11 +88,6 @@ class Settings(BaseSettings):
 
     # Path to the Firebase service account JSON (optional; used only for push).
     firebase_credentials: str = Field('')
-
-    supabase_url: str | None = None
-    supabase_anon_key: str | None = None
-    supabase_service_role_key: str | None = None
-    supabase_publishable_key: str | None = None
 
     @property
     def smtp_configured(self) -> bool:

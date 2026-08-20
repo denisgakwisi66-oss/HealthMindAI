@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import Depends, Request, Security
+import httpx
+from fastapi import Depends, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from sqlalchemy import select
@@ -10,16 +11,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies.database import get_db
 from app.core.exceptions import AuthenticationError, AuthorizationError
-from app.core.security import decode_token
+from app.core.security import verify_supabase_token
 from app.models.user import User
 
 oauth2_scheme = HTTPBearer(auto_error=False)
 
 
 def user_to_dict(user: User) -> dict[str, Any]:
-    """Shared, safe serialisation of a user. Never expose the password hash."""
+    """Shared, safe serialisation of a user. Never expose auth internals."""
     return {
-        'id': user.id,
+        'id': str(user.id),
         'email': user.email,
         'full_name': user.full_name,
         'profile_picture': user.profile_picture,
@@ -58,20 +59,22 @@ async def _get_current_user(
 
     token = credentials.credentials
     try:
-        payload = decode_token(token)
+        payload = await verify_supabase_token(token)
     except JWTError:
         raise AuthenticationError('Invalid or expired access token.')
-
-    if payload.get('type') != 'access':
-        raise AuthenticationError('Access token expected.')
+    except httpx.HTTPError:
+        raise AuthenticationError('Could not verify the access token right now.')
 
     user_id = payload.get('sub')
     if not user_id:
         raise AuthenticationError('Access token missing subject.')
 
-    result = await db.execute(select(User).where(User.id == int(user_id), User.is_active == True))  # noqa: E712
+    result = await db.execute(select(User).where(User.id == user_id, User.is_active == True))  # noqa: E712
     user = result.scalar_one_or_none()
     if not user:
+        # A valid Supabase session but no matching public.users row yet — the
+        # on_auth_user_created trigger should always create one; treat a miss
+        # as "not provisioned" rather than authenticated.
         raise AuthenticationError('User not found or inactive.')
 
     return user

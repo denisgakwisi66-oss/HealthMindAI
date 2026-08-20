@@ -13,6 +13,7 @@ from app.api.dependencies.auth import get_current_user, require_roles
 from app.api.dependencies.database import get_db
 from app.core.audit import log_audit
 from app.core.exceptions import ApiException, AuthorizationError, NotFoundError
+from app.core.notification_email import notify_admin
 from app.models.appointment import Appointment, AppointmentStatus
 from app.models.doctor import Availability, Doctor
 from app.models.user import User, UserRole
@@ -26,7 +27,7 @@ CONFLICT = 'This time slot is no longer available. Please choose another time.'
 
 class AppointmentCreateRequest(BaseModel):
     specialty: str | None = None
-    doctor_id: int
+    doctor_id: str
     date: str
     time: str = Field(pattern=r'^\d{2}:\d{2}$')
     notes: str | None = None
@@ -56,12 +57,12 @@ def _appointment_to_dict(appt: Appointment, doctor_name: str | None, patient_nam
     }
 
 
-async def _get_doctor_profile_by_user(db: AsyncSession, doctor_user_id: int) -> Doctor | None:
+async def _get_doctor_profile_by_user(db: AsyncSession, doctor_user_id: str) -> Doctor | None:
     result = await db.execute(select(Doctor).where(Doctor.user_id == doctor_user_id))
     return result.scalar_one_or_none()
 
 
-async def _booked_times(db: AsyncSession, doctor_user_id: int, target_date: date) -> set[str]:
+async def _booked_times(db: AsyncSession, doctor_user_id: str, target_date: date) -> set[str]:
     result = await db.execute(
         select(Appointment).where(
             Appointment.doctor_id == doctor_user_id,
@@ -122,7 +123,7 @@ async def list_appointments(
         user_ids.add(a.doctor_id)
         if current_user.role in (UserRole.DOCTOR, UserRole.ADMIN):
             user_ids.add(a.patient_id)
-    name_map: dict[int, str] = {}
+    name_map: dict[str, str] = {}
     if user_ids:
         users = (await db.execute(select(User).where(User.id.in_(user_ids)))).scalars().all()
         name_map = {u.id: u.full_name for u in users}
@@ -171,7 +172,7 @@ async def get_doctors(specialty: str | None = None, db: AsyncSession = Depends(g
 
 
 @router.get('/appointments/available-slots')
-async def get_available_slots(doctor_id: int, date: str, db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
+async def get_available_slots(doctor_id: str, date: str, db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
     try:
         target_date = date.fromisoformat(date)
     except ValueError:
@@ -261,6 +262,16 @@ async def create_appointment(
                     resource_type='appointment', resource_id=appointment.id, request=request)
 
     doctor_name = (await db.execute(select(User.full_name).where(User.id == payload.doctor_id))).scalar()
+    await notify_admin(
+        event_type='appointment_created',
+        subject=f'New appointment: {current_user.full_name} with Dr. {doctor_name}',
+        text_body=(
+            f'{current_user.full_name} booked an appointment with Dr. {doctor_name}\n'
+            f'Date: {target_date.isoformat()} at {payload.time}\n'
+            f'Reason: {payload.notes or "Not provided"}'
+        ),
+        resource_type='appointment', resource_id=appointment.id,
+    )
     return _appointment_to_dict(appointment, f'Dr. {doctor_name}' if doctor_name else None, current_user.full_name)
 
 
@@ -286,6 +297,15 @@ async def cancel_appointment(
                               message=f'The appointment on {appointment.date.isoformat()} at {appointment.time} was cancelled.')
     await log_audit(db, action='appointment.cancel', user_id=current_user.id,
                     resource_type='appointment', resource_id=appointment.id, details={'reason': payload.reason}, request=request)
+    await notify_admin(
+        event_type='appointment_status_changed',
+        subject=f'Appointment cancelled: #{appointment.id}',
+        text_body=(
+            f'Appointment #{appointment.id} on {appointment.date.isoformat()} at {appointment.time} '
+            f'was cancelled by {current_user.full_name}.\nReason: {payload.reason}'
+        ),
+        resource_type='appointment', resource_id=appointment.id,
+    )
     return {'message': 'Appointment cancelled.'}
 
 
@@ -314,4 +334,13 @@ async def update_appointment_status(
     await db.commit()
     await log_audit(db, action='appointment.status', user_id=current_user.id,
                     resource_type='appointment', resource_id=appointment.id, details={'status': new_status.value}, request=request)
+    await notify_admin(
+        event_type='appointment_status_changed',
+        subject=f'Appointment #{appointment.id} status: {new_status.value}',
+        text_body=(
+            f'Appointment #{appointment.id} on {appointment.date.isoformat()} at {appointment.time} '
+            f'was updated to "{new_status.value}" by {current_user.full_name}.'
+        ),
+        resource_type='appointment', resource_id=appointment.id,
+    )
     return {'id': appointment.id, 'status': new_status.value, 'message': 'Appointment status updated.'}

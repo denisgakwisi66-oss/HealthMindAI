@@ -1,51 +1,47 @@
 version: '3.9'
 
+# Postgres is Supabase-hosted now (DATABASE_URL in .env points at it) — no
+# local `db` service. Redis stays local for rate limiting and Celery.
+
 services:
   web:
     build: .
+    restart: unless-stopped
     ports:
       - '8000:8000'
     env_file:
       - .env
     depends_on:
-      - db
       - redis
-
-  db:
-    image: postgres:16
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: healthmind
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   redis:
     image: redis:7-alpine
-    restart: always
-    ports:
-      - '6379:6379'
+    restart: unless-stopped
+    # Not exposed to the host by default — only other containers on this
+    # compose network need to reach it. Uncomment if you need direct access.
+    # ports:
+    #   - '6379:6379'
 
   worker:
     build: .
     command: celery -A app.worker worker --loglevel=info
+    restart: unless-stopped
     env_file:
       - .env
     depends_on:
       - redis
-      - db
 
   beat:
     build: .
     command: celery -A app.worker beat --loglevel=info
+    restart: unless-stopped
     env_file:
       - .env
     depends_on:
       - redis
-      - db
-
-volumes:
-  postgres_data:

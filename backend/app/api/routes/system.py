@@ -10,6 +10,19 @@ from app.core.config import settings
 from app.core.exceptions import ServiceUnavailableError
 
 router = APIRouter(prefix='/system', tags=['system'])
+config_router = APIRouter(prefix='/config', tags=['config'])
+
+
+@config_router.get('/public', summary='Public runtime config for the frontend')
+async def get_public_config() -> dict:
+    """Values safe to ship to any browser: a Supabase project URL and its
+    anon key are meant to be public (Supabase's own security model relies on
+    RLS/JWT verification, not on keeping these secret) — never put the
+    service-role key or JWT secret here."""
+    return {
+        'supabase_url': settings.supabase_url,
+        'supabase_anon_key': settings.supabase_anon_key.get_secret_value(),
+    }
 
 
 async def check_redis() -> dict:

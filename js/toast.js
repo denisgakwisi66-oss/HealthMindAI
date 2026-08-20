@@ -204,6 +204,11 @@ const Toast = (() => {
   };
 })();
 
+// Named convenience export matching call sites that expect
+// showToast(type, title, message) rather than Toast.show({...}).
+export const showToast = (type, title, message, options = {}) =>
+  Toast.show({ type, title, message, ...options });
+
 // Export for module usage
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = Toast;

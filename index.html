@@ -6,7 +6,8 @@
   <title>HealthMind AI — Healthcare Made Smarter</title>
   <meta name="description" content="Your health, one intelligent assistant. Understand your health, organize your care, stay connected.">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  
+  <link rel="preconnect" href="https://esm.sh">
+
   <!-- CSS -->
   <link rel="stylesheet" href="/css/variables.css">
   <link rel="stylesheet" href="/css/base.css">
@@ -62,7 +63,7 @@
     <!-- Main Content -->
     <main id="main-content" class="main-content" style="margin-left: 0;">
       <!-- HERO SECTION -->
-      <section class="hero-section" style="padding: var(--spacing-16) 0; position: relative; overflow: hidden; background-image: linear-gradient(rgba(248, 250, 252, 0.45), rgba(248, 250, 252, 0.55)), url('/image.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+      <section class="hero-section" style="padding: var(--spacing-16) 0; position: relative; overflow: hidden; background-image: linear-gradient(rgba(248, 250, 252, 0.45), rgba(248, 250, 252, 0.55)), url('/image-hero.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
         <!-- Flowing background path -->
         <svg class="flowing-path" style="position: absolute; top: 0; right: 0; width: 50%; height: 100%; opacity: 0.05;" viewBox="0 0 800 600" fill="none">
           <path d="M0,300 Q100,200 200,250 T400,300 T600,250 T800,300" stroke="var(--color-primary)" stroke-width="3" stroke-dasharray="1000" stroke-dashoffset="1000"/>
@@ -479,9 +480,6 @@
   <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <!-- JavaScript -->
-  <!-- Firebase SDK (push notifications / messaging) -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
   <script type="module" src="/js/app.js"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@ import AuthService from '/js/services/auth.js';
 import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
+import { escapeText as esc } from '/js/security.js';
 
 const DashboardPage = (() => {
   let user = null;
@@ -25,7 +26,7 @@ const DashboardPage = (() => {
     const greetingEmoji = document.getElementById('greeting-emoji');
 
     if (greetingText) {
-      greetingText.innerHTML = `${greeting}, <span id="user-name">${name}</span>`;
+      greetingText.innerHTML = `${greeting}, <span id="user-name">${esc(name)}</span>`;
     }
     if (greetingEmoji) {
       greetingEmoji.textContent = emoji;
@@ -95,9 +96,9 @@ const DashboardPage = (() => {
           <div style="font-size: var(--font-size-xs); color: var(--color-text-secondary);">${formattedDate}</div>
         </div>
         <div style="flex: 1;">
-          <div style="font-weight: var(--font-weight-semibold);">${appt.doctor_name || 'Doctor'}</div>
+          <div style="font-weight: var(--font-weight-semibold);">${esc(appt.doctor_name) || 'Doctor'}</div>
           <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">
-            ${appt.specialty || 'General'} • ${appt.time || 'Time TBD'}
+            ${esc(appt.specialty) || 'General'} • ${esc(appt.time) || 'Time TBD'}
           </div>
         </div>
         <a href="/appointments.html" class="btn btn-sm btn-outline">View</a>
@@ -122,9 +123,9 @@ const DashboardPage = (() => {
     container.innerHTML = medications.slice(0, 2).map(med => `
       <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-3); border-bottom: 1px solid var(--color-border);">
         <div>
-          <div style="font-weight: var(--font-weight-semibold);">${med.name}</div>
+          <div style="font-weight: var(--font-weight-semibold);">${esc(med.name)}</div>
           <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">
-            ${med.dosage} • ${med.schedule}
+            ${esc(med.dosage)} • ${esc(med.schedule)}
           </div>
         </div>
         <div style="display: flex; align-items: center; gap: var(--spacing-2);">
@@ -151,15 +152,15 @@ const DashboardPage = (() => {
 
     container.innerHTML = notifications.slice(0, 3).map(notif => `
       <div style="display: flex; align-items: center; gap: var(--spacing-3); padding: var(--spacing-2) 0; border-bottom: 1px solid var(--color-border-light);">
-        <div style="font-size: 20px;">${notif.icon || '🔔'}</div>
+        <div style="font-size: 20px;">${esc(notif.icon) || '🔔'}</div>
         <div style="flex: 1; min-width: 0;">
-          <div style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);">${notif.title}</div>
+          <div style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);">${esc(notif.title)}</div>
           <div style="font-size: var(--font-size-xs); color: var(--color-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            ${notif.message}
+            ${esc(notif.message)}
           </div>
         </div>
         <div style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); flex-shrink: 0;">
-          ${notif.time_ago || 'Just now'}
+          ${esc(notif.time_ago) || 'Just now'}
         </div>
       </div>
     `).join('');
@@ -182,9 +183,9 @@ const DashboardPage = (() => {
     container.innerHTML = records.slice(0, 3).map(record => `
       <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-3); border-bottom: 1px solid var(--color-border-light);">
         <div>
-          <div style="font-weight: var(--font-weight-semibold);">${record.title || 'Medical Record'}</div>
+          <div style="font-weight: var(--font-weight-semibold);">${esc(record.title) || 'Medical Record'}</div>
           <div style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">
-            ${record.type || 'Document'} • ${record.date || 'Date unavailable'}
+            ${esc(record.type) || 'Document'} • ${esc(record.date) || 'Date unavailable'}
           </div>
         </div>
         <a href="/medical-records.html" class="btn btn-sm btn-ghost">View</a>
@@ -247,10 +248,11 @@ const DashboardPage = (() => {
 
   const init = async () => {
     try {
-      const role = AuthService.getRole() || 'patient';
-      Navigation.init(role, true);
-
-      user = await AuthService.getCurrentUser();
+      // App.init() already resolved the session, fetched the profile, and
+      // rendered navigation before this page script ever ran — reuse that
+      // instead of re-fetching (a second concurrent session check here can
+      // stall behind Supabase's client-side session lock).
+      user = AuthService.getUser();
       updateGreeting();
       await loadDashboardData();
 

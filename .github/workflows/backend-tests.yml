@@ -1,0 +1,75 @@
+name: Backend tests
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-tests.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-tests.yml'
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: healthmind_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/healthmind_test
+      REDIS_URL: redis://localhost:6379/0
+      SUPABASE_URL: https://test.supabase.co
+      SUPABASE_ANON_KEY: test-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: test-service-role-key
+      GEMINI_API_KEY: test-gemini-key
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Stub the auth.users table (real Supabase projects have this; CI's bare Postgres doesn't)
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d healthmind_test -c "
+            create schema if not exists auth;
+            create table if not exists auth.users (
+              id uuid primary key,
+              email text,
+              raw_user_meta_data jsonb not null default '{}'::jsonb,
+              raw_app_meta_data jsonb not null default '{}'::jsonb,
+              email_confirmed_at timestamptz
+            );
+          "
+
+      - name: Run migrations
+        working-directory: backend
+        run: alembic upgrade head
+
+      - name: Run tests
+        working-directory: backend
+        run: pytest

@@ -4,6 +4,7 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Enum, Float, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.base import Base
 
@@ -21,13 +22,13 @@ class EmergencyEvent(Base):
     __tablename__ = 'emergency_events'
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=True, index=True)  # nullable for unauthenticated alerts
+    user_id = Column(UUID(as_uuid=True), nullable=True, index=True)  # nullable for unauthenticated alerts
     message = Column(Text, nullable=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     accuracy = Column(Float, nullable=True)
     status = Column(
-        Enum(EmergencyStatus, native_enum=False),
+        Enum(EmergencyStatus, native_enum=False, values_callable=lambda cls: [e.value for e in cls]),
         default=EmergencyStatus.SENT,
         nullable=False,
     )
