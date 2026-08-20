@@ -2,7 +2,7 @@
    HEALTHMIND AI — BASE STYLES
    ============================================ */
 
-   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap');
 
    /* ===== RESET & BASE ===== */
    
@@ -38,8 +38,10 @@
    /* ===== TYPOGRAPHY ===== */
    
    h1, h2, h3, h4, h5, h6 {
+     font-family: var(--font-family-heading);
      font-weight: var(--font-weight-bold);
      line-height: var(--line-height-tight);
+     letter-spacing: -0.015em;
      color: var(--color-text);
      margin-bottom: var(--spacing-4);
    }
