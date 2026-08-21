@@ -14,6 +14,7 @@ from app.api.dependencies.database import get_db
 from app.core.audit import log_audit
 from app.core.exceptions import ApiException, AuthorizationError, NotFoundError
 from app.core.notification_email import notify_admin
+from app.core.webhooks import emit_n8n_event
 from app.models.appointment import Appointment, AppointmentStatus
 from app.models.doctor import Availability, Doctor
 from app.models.user import User, UserRole
@@ -272,6 +273,19 @@ async def create_appointment(
         ),
         resource_type='appointment', resource_id=appointment.id,
     )
+    await emit_n8n_event('appointment.created', {
+        'appointment_id': appointment.id,
+        'patient_id': str(current_user.id),
+        'patient_name': current_user.full_name,
+        'patient_email': current_user.email,
+        'doctor_id': str(payload.doctor_id),
+        'doctor_name': doctor_name,
+        'specialty': appointment.specialty,
+        'date': target_date.isoformat(),
+        'time': payload.time,
+        'reason': payload.notes,
+        'status': appointment.status.value if hasattr(appointment.status, 'value') else str(appointment.status),
+    })
     return _appointment_to_dict(appointment, f'Dr. {doctor_name}' if doctor_name else None, current_user.full_name)
 
 
@@ -306,6 +320,17 @@ async def cancel_appointment(
         ),
         resource_type='appointment', resource_id=appointment.id,
     )
+    await emit_n8n_event('appointment.cancelled', {
+        'appointment_id': appointment.id,
+        'patient_id': str(appointment.patient_id),
+        'doctor_id': str(appointment.doctor_id),
+        'date': appointment.date.isoformat() if appointment.date else None,
+        'time': appointment.time,
+        'reason': payload.reason,
+        'cancelled_by': str(current_user.id),
+        'cancelled_by_name': current_user.full_name,
+        'status': 'cancelled',
+    })
     return {'message': 'Appointment cancelled.'}
 
 
@@ -343,4 +368,15 @@ async def update_appointment_status(
         ),
         resource_type='appointment', resource_id=appointment.id,
     )
+
+    await emit_n8n_event('appointment.status_changed', {
+        'appointment_id': appointment.id,
+        'patient_id': str(appointment.patient_id),
+        'doctor_id': str(appointment.doctor_id),
+        'date': appointment.date.isoformat() if appointment.date else None,
+        'time': appointment.time,
+        'status': new_status.value,
+        'updated_by': str(current_user.id),
+        'updated_by_name': current_user.full_name,
+    })
     return {'id': appointment.id, 'status': new_status.value, 'message': 'Appointment status updated.'}

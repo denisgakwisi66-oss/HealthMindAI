@@ -46,3 +46,6 @@ Thumbs.db
 /*.ps1
 /*.bat
 HealthMindAI/
+
+# local n8n secret helper
+n8n/.last-generated-secret.txt

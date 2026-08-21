@@ -1,0 +1,319 @@
+{
+  "name": "HealthMind Reminders Cron",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "cron-15m",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.HEALTHMIND_API_BASE }}/api/automation/appointments/upcoming",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "within_hours",
+              "value": "24"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-HealthMind-Automation-Key",
+              "value": "={{ $env.HEALTHMIND_WEBHOOK_SECRET }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-appts-24h",
+      "name": "Fetch Upcoming Appts (24h)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.first().json.appointments || [];\n// Reminder windows: ~24h (23-25h) and ~1h (0.5-1.5h)\nconst out = [];\nfor (const a of items) {\n  const h = Number(a.hours_until);\n  let kind = null;\n  if (h >= 23 && h <= 25) kind = 'T-24h';\n  if (h >= 0.5 && h <= 1.5) kind = 'T-1h';\n  if (!kind) continue;\n  if (!a.patient?.email) continue;\n  out.push({ json: { kind, ...a } });\n}\nreturn out.length ? out : [{ json: { skip: true } }];"
+      },
+      "id": "filter-appt-windows",
+      "name": "Filter T-24h / T-1h",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notTrue"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-has-appt",
+      "name": "Has Appointment Reminder?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        740,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.HEALTHMIND_FROM_EMAIL || 'noreply@healthmind.ai' }}",
+        "toEmail": "={{ $json.patient.email }}",
+        "subject": "=Reminder ({{ $json.kind }}): appointment {{ $json.date }} {{ $json.time }}",
+        "text": "=Hi {{ $json.patient.full_name }},\n\nThis is your {{ $json.kind }} reminder for your appointment with Dr. {{ $json.doctor.full_name }}.\n\nWhen: {{ $json.date }} at {{ $json.time }}\nSpecialty: {{ $json.specialty || '\u2014' }}\n\n\u2014 HealthMind AI"
+      },
+      "id": "email-appt-reminder",
+      "name": "Email Appointment Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1000,
+        120
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "SMTP",
+          "name": "HealthMind SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.HEALTHMIND_API_BASE }}/api/automation/medications/due",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "window_minutes",
+              "value": "30"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-HealthMind-Automation-Key",
+              "value": "={{ $env.HEALTHMIND_WEBHOOK_SECRET }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-meds-due",
+      "name": "Fetch Due Medications",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const meds = $input.first().json.medications || [];\nconst out = meds\n  .filter(m => m.patient?.email)\n  .map(m => ({ json: m }));\nreturn out.length ? out : [{ json: { skip: true } }];"
+      },
+      "id": "split-meds",
+      "name": "Split Due Meds",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notTrue"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-has-med",
+      "name": "Has Med Reminder?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        740,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.HEALTHMIND_FROM_EMAIL || 'noreply@healthmind.ai' }}",
+        "toEmail": "={{ $json.patient.email }}",
+        "subject": "=Medication reminder: {{ $json.name }} at {{ $json.schedule_time }}",
+        "text": "=Hi {{ $json.patient.full_name }},\n\nTime to take {{ $json.name }} ({{ $json.dosage }}).\nScheduled: {{ $json.schedule_time }}\nInstructions: {{ $json.instructions || '\u2014' }}\n\n\u2014 HealthMind AI"
+      },
+      "id": "email-med-reminder",
+      "name": "Email Medication Reminder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1000,
+        360
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "SMTP",
+          "name": "HealthMind SMTP"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Fetch Upcoming Appts (24h)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Due Medications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Upcoming Appts (24h)": {
+      "main": [
+        [
+          {
+            "node": "Filter T-24h / T-1h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter T-24h / T-1h": {
+      "main": [
+        [
+          {
+            "node": "Has Appointment Reminder?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Appointment Reminder?": {
+      "main": [
+        [
+          {
+            "node": "Email Appointment Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Fetch Due Medications": {
+      "main": [
+        [
+          {
+            "node": "Split Due Meds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Due Meds": {
+      "main": [
+        [
+          {
+            "node": "Has Med Reminder?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Med Reminder?": {
+      "main": [
+        [
+          {
+            "node": "Email Medication Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "healthmind"
+    },
+    {
+      "name": "reminders"
+    }
+  ]
+}

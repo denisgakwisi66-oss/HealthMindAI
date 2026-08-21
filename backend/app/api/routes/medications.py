@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.database import get_db
 from app.core.audit import log_audit
+from app.core.webhooks import emit_n8n_event
 from app.core.exceptions import ApiException, AuthorizationError, NotFoundError
 from app.models.medication import Medication
 from app.models.user import User, UserRole
@@ -124,6 +125,19 @@ async def create_medication(
     await db.refresh(med)
     await log_audit(db, action='medication.create', user_id=current_user.id,
                     resource_type='medication', resource_id=med.id, request=request)
+    await emit_n8n_event('medication.created', {
+        'medication_id': med.id,
+        'patient_id': str(current_user.id),
+        'patient_email': current_user.email,
+        'patient_name': current_user.full_name,
+        'name': med.name,
+        'dosage': med.dosage,
+        'frequency': med.frequency,
+        'schedule': med.schedule,
+        'instructions': med.instructions,
+        'start_date': med.start_date.isoformat() if med.start_date else None,
+        'end_date': med.end_date.isoformat() if med.end_date else None,
+    })
     return _medication_to_dict(med)
 
 
@@ -149,6 +163,19 @@ async def update_medication(
     await db.refresh(med)
     await log_audit(db, action='medication.update', user_id=current_user.id,
                     resource_type='medication', resource_id=med.id, request=request)
+    await emit_n8n_event('medication.updated', {
+        'medication_id': med.id,
+        'patient_id': str(med.patient_id),
+        'name': med.name,
+        'dosage': med.dosage,
+        'frequency': med.frequency,
+        'schedule': med.schedule,
+        'instructions': med.instructions,
+        'start_date': med.start_date.isoformat() if med.start_date else None,
+        'end_date': med.end_date.isoformat() if med.end_date else None,
+        'is_active': med.is_active,
+        'updated_by': str(current_user.id),
+    })
     return _medication_to_dict(med)
 
 

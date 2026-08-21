@@ -12,6 +12,7 @@ from app.api.dependencies.database import get_db
 from app.api.dependencies.rate_limit import rate_limit
 from app.core.config import settings
 from app.core.email import send_email
+from app.core.webhooks import emit_n8n_event
 from app.core.exceptions import ApiException, ServiceUnavailableError
 from app.core.audit import log_audit
 from app.models.emergency import EmergencyEvent, EmergencyStatus
@@ -119,6 +120,19 @@ async def trigger_emergency_alert(
             status_code=status.HTTP_502_BAD_GATEWAY,
         )
 
+    await emit_n8n_event('emergency.alert', {
+        'event_id': event.id,
+        'user_id': str(current_user.id) if current_user else None,
+        'user_name': current_user.full_name if current_user else None,
+        'user_email': current_user.email if current_user else None,
+        'message': payload.message,
+        'latitude': payload.location.latitude if payload.location else None,
+        'longitude': payload.location.longitude if payload.location else None,
+        'accuracy': payload.location.accuracy if payload.location else None,
+        'recipient': recipient,
+        'email_delivered': True,
+        'maps_link': maps_link,
+    })
     return {
         'status': 'sent',
         'recipient': recipient,

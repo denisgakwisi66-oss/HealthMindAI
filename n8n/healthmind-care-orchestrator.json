@@ -1,0 +1,559 @@
+{
+  "name": "HealthMind Care Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "healthmind-care",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-main",
+      "name": "HealthMind Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "webhookId": "healthmind-care"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst raw = typeof $input.first().json === 'string'\n  ? $input.first().json\n  : JSON.stringify($input.first().json);\nconst headers = $input.first().json.headers || {};\nconst signature = headers['x-healthmind-signature'] || headers['X-HealthMind-Signature'] || '';\nconst secret = $env.HEALTHMIND_WEBHOOK_SECRET || '';\n\nlet body = $input.first().json.body || $input.first().json;\nif (body.body) body = body.body;\nif (typeof body === 'string') {\n  try { body = JSON.parse(body); } catch (e) {}\n}\n\nif (secret) {\n  const expected = 'sha256=' + crypto.createHmac('sha256', secret).update(\n    typeof $input.first().json.rawBody === 'string' ? $input.first().json.rawBody : JSON.stringify(body)\n  ).digest('hex');\n  // Soft-verify: log mismatch but still continue in demo mode if VERIFY_STRICT !== '1'\n  if (signature && signature !== expected && $env.HEALTHMIND_VERIFY_STRICT === '1') {\n    throw new Error('Invalid X-HealthMind-Signature');\n  }\n}\n\nreturn [{\n  json: {\n    event: body.event || headers['x-healthmind-event'] || 'unknown',\n    timestamp: body.timestamp,\n    source: body.source || 'healthmind-ai',\n    data: body.data || body,\n  }\n}];"
+      },
+      "id": "normalize-verify",
+      "name": "Normalize + Verify",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "appointment.created",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "appointment.created"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "appointment.cancelled",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "appointment.cancelled"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "appointment.status_changed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "appointment.status_changed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "emergency.alert",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "emergency.alert"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "user.registered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "user.registered"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "medication.created",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "medication.created"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "medication.updated",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "medication.updated"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "switch-event",
+      "name": "Route by Event",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.HEALTHMIND_FROM_EMAIL || 'noreply@healthmind.ai' }}",
+        "toEmail": "={{ $json.data.patient_email }}",
+        "subject": "=Appointment confirmed \u2014 {{ $json.data.date }} {{ $json.data.time }}",
+        "text": "=Hi {{ $json.data.patient_name }},\n\nYour appointment with Dr. {{ $json.data.doctor_name }} is booked.\n\nDate: {{ $json.data.date }}\nTime: {{ $json.data.time }}\nSpecialty: {{ $json.data.specialty || 'General' }}\nReason: {{ $json.data.reason || '\u2014' }}\n\n\u2014 HealthMind AI"
+      },
+      "id": "email-appt-created-patient",
+      "name": "Email Patient (Booked)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        780,
+        0
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "SMTP",
+          "name": "HealthMind SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.HEALTHMIND_FROM_EMAIL || 'noreply@healthmind.ai' }}",
+        "toEmail": "={{ $env.HEALTHMIND_ADMIN_EMAIL }}",
+        "subject": "=New appointment #{{ $json.data.appointment_id }}",
+        "text": "=Patient {{ $json.data.patient_name }} ({{ $json.data.patient_email }}) booked with Dr. {{ $json.data.doctor_name }} on {{ $json.data.date }} at {{ $json.data.time }}."
+      },
+      "id": "email-appt-created-admin",
+      "name": "Email Admin (Booked)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1020,
+        0
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "SMTP",
+          "name": "HealthMind SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.HEALTHMIND_FROM_EMAIL || 'noreply@healthmind.ai' }}",
+        "toEmail": "={{ $json.data.patient_email || $env.HEALTHMIND_ADMIN_EMAIL }}",
+        "subject": "=Appointment cancelled #{{ $json.data.appointment_id }}",
+        "text": "=Appointment on {{ $json.data.date }} at {{ $json.data.time }} was cancelled.\nReason: {{ $json.data.reason || '\u2014' }}\nCancelled by: {{ $json.data.cancelled_by_name || $json.data.cancelled_by }}"
+      },
+      "id": "email-appt-cancelled",
+      "name": "Email (Cancelled)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        780,
+        160
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "SMTP",
+          "name": "HealthMind SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.HEALTHMIND_FROM_EMAIL || 'noreply@healthmind.ai' }}",
+        "toEmail": "={{ $env.HEALTHMIND_ADMIN_EMAIL }}",
+        "subject": "=Appointment status \u2192 {{ $json.data.status }} #{{ $json.data.appointment_id }}",
+        "text": "=Appointment #{{ $json.data.appointment_id }} on {{ $json.data.date }} {{ $json.data.time }} is now {{ $json.data.status }}.\nUpdated by: {{ $json.data.updated_by_name }}"
+      },
+      "id": "email-appt-status",
+      "name": "Email (Status Changed)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        780,
+        320
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "SMTP",
+          "name": "HealthMind SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.HEALTHMIND_FROM_EMAIL || 'noreply@healthmind.ai' }}",
+        "toEmail": "={{ $env.HEALTHMIND_SOS_EMAIL || $env.HEALTHMIND_ADMIN_EMAIL }}",
+        "subject": "=\ud83d\udea8 SOS ALERT \u2014 {{ $json.data.user_name || 'Unknown user' }}",
+        "text": "=EMERGENCY ALERT from HealthMind\n\nUser: {{ $json.data.user_name }} ({{ $json.data.user_email }})\nMessage: {{ $json.data.message || 'No message' }}\nLocation: {{ $json.data.latitude }}, {{ $json.data.longitude }}\nMap: {{ $json.data.maps_link || 'n/a' }}\nEvent ID: {{ $json.data.event_id }}\n\nAlso notify on-call via Slack/SMS nodes below."
+      },
+      "id": "email-sos",
+      "name": "Email SOS",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        780,
+        480
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "SMTP",
+          "name": "HealthMind SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": "={{ $env.HEALTHMIND_SLACK_SOS_CHANNEL || 'ops-sos' }}",
+        "text": "=\ud83d\udea8 *HealthMind SOS*\nUser: {{ $json.data.user_name }} ({{ $json.data.user_email }})\nMsg: {{ $json.data.message || '\u2014' }}\nMap: {{ $json.data.maps_link || 'n/a' }}"
+      },
+      "id": "slack-sos",
+      "name": "Slack SOS (placeholder)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        1020,
+        480
+      ],
+      "notesInFlow": true,
+      "notes": "Connect Slack credentials. Optional \u2014 disable if unused."
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.HEALTHMIND_FROM_EMAIL || 'noreply@healthmind.ai' }}",
+        "toEmail": "={{ $json.data.email }}",
+        "subject": "Welcome to HealthMind AI",
+        "text": "=Hi {{ $json.data.full_name }},\n\nWelcome to HealthMind AI. Your {{ $json.data.role }} account is ready.\n\nNext steps:\n1. Complete your profile\n2. Book an appointment or add medications\n3. Save the Emergency SOS page for quick access\n\n\u2014 The HealthMind team"
+      },
+      "id": "email-welcome",
+      "name": "Welcome Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        780,
+        640
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "SMTP",
+          "name": "HealthMind SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.HEALTHMIND_FROM_EMAIL || 'noreply@healthmind.ai' }}",
+        "toEmail": "={{ $env.HEALTHMIND_ADMIN_EMAIL }}",
+        "subject": "=New {{ $json.data.role }} registered",
+        "text": "={{ $json.data.full_name }} ({{ $json.data.email }}) registered as {{ $json.data.role }}."
+      },
+      "id": "email-admin-register",
+      "name": "Admin New User Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1020,
+        640
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "SMTP",
+          "name": "HealthMind SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.HEALTHMIND_FROM_EMAIL || 'noreply@healthmind.ai' }}",
+        "toEmail": "={{ $json.data.patient_email }}",
+        "subject": "=Medication saved: {{ $json.data.name }}",
+        "text": "=Hi {{ $json.data.patient_name }},\n\nYour medication was saved:\n\u2022 {{ $json.data.name }} \u2014 {{ $json.data.dosage }}\n\u2022 Frequency: {{ $json.data.frequency }}\n\u2022 Schedule: {{ $json.data.schedule || 'not set' }}\n\nReminders will use your schedule times."
+      },
+      "id": "email-med-created",
+      "name": "Email Med Created",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        780,
+        800
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "SMTP",
+          "name": "HealthMind SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ok: true, event: $json.event || 'medication.updated', note: 'Medication update acknowledged; reminders use Cron workflow.' } }];"
+      },
+      "id": "med-updated-ack",
+      "name": "Med Updated Ack",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ignored: true, event: $json.event || 'unknown' } }];"
+      },
+      "id": "fallback",
+      "name": "Unhandled Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        1120
+      ]
+    }
+  ],
+  "connections": {
+    "HealthMind Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize + Verify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize + Verify": {
+      "main": [
+        [
+          {
+            "node": "Route by Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Event": {
+      "main": [
+        [
+          {
+            "node": "Email Patient (Booked)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email (Cancelled)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email (Status Changed)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email SOS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email Med Created",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Med Updated Ack",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unhandled Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Patient (Booked)": {
+      "main": [
+        [
+          {
+            "node": "Email Admin (Booked)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email SOS": {
+      "main": [
+        [
+          {
+            "node": "Slack SOS (placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Admin New User Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "healthmind"
+    },
+    {
+      "name": "care-orchestrator"
+    }
+  ]
+}

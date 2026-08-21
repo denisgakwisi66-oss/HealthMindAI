@@ -20,3 +20,13 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Then open <http://localhost:8000>.
+
+## n8n Care Orchestrator
+
+Appointment confirmations, medication reminders, SOS fan-out, and welcome
+emails are automated via n8n.
+
+1. Set `N8N_WEBHOOK_URL` and `N8N_WEBHOOK_SECRET` in `backend/.env`
+2. Import workflows from [`n8n/`](n8n/) (see [`n8n/README.md`](n8n/README.md))
+3. Payload reference: [`docs/n8n-webhook-payloads.md`](docs/n8n-webhook-payloads.md)
+

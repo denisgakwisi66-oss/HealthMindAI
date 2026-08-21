@@ -10,6 +10,7 @@ from app.api.dependencies.database import get_db
 from app.api.dependencies.rate_limit import rate_limit
 from app.core.config import settings
 from app.core.notification_email import notify_admin
+from app.core.webhooks import emit_n8n_event
 from app.models.user import User
 
 router = APIRouter(prefix='/api/notify', tags=['notify'])
@@ -40,4 +41,11 @@ async def notify_user_registered(
             text_body=f'{user.full_name} ({user.email}) registered as a {user.role.value}.',
             resource_type='user', resource_id=str(user.id),
         )
+        await emit_n8n_event('user.registered', {
+            'user_id': str(user.id),
+            'email': user.email,
+            'full_name': user.full_name,
+            'role': user.role.value,
+            'phone': getattr(user, 'phone', None),
+        })
     return {'message': 'ok'}

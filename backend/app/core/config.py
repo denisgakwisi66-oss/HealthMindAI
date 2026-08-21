@@ -89,6 +89,12 @@ class Settings(BaseSettings):
     # Path to the Firebase service account JSON (optional; used only for push).
     firebase_credentials: str = Field('')
 
+    # n8n Care Orchestrator — leave blank to disable outbound automation.
+    # Example: https://n8n.example.com/webhook/healthmind-care
+    n8n_webhook_url: str = Field('')
+    # Shared secret for HMAC-SHA256 signatures (header X-HealthMind-Signature).
+    n8n_webhook_secret: SecretStr = Field(SecretStr(''))
+
     @property
     def smtp_configured(self) -> bool:
         user = self.smtp_user.get_secret_value()

@@ -21,6 +21,7 @@ from app.api.routes.ai_assistant import router as ai_router
 from app.api.routes.dashboards import router as dashboards_router
 from app.api.routes.admin import router as admin_router
 from app.api.routes.notify import router as notify_router
+from app.api.routes.automation import router as automation_router
 from app.core.config import settings
 from app.core.exceptions import ApiException
 from app.core.logging import configure_logging
@@ -89,6 +90,7 @@ def create_app() -> FastAPI:
     app.include_router(dashboards_router)
     app.include_router(admin_router)
     app.include_router(notify_router)
+    app.include_router(automation_router)
 
     frontend_dir = Path(__file__).resolve().parents[2]
     app.mount('/', StaticFiles(directory=str(frontend_dir), html=True), name='frontend')
