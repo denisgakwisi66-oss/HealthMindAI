@@ -6,13 +6,16 @@
 
 .ai-assistant-layout {
   padding: 0;
-  height: calc(100vh - var(--header-height));
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
   overflow: hidden;
 }
 
 .ai-container {
   display: flex;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   background: var(--color-background);
 }
 
@@ -159,14 +162,16 @@
 
 .chat-area {
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
   background: var(--color-background);
 }
 
 .chat-messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: var(--spacing-6);
   display: flex;
@@ -574,14 +579,15 @@
 
 @media (max-width: 1023px) {
   .ai-assistant-layout {
-    height: calc(100vh - var(--header-height) - var(--bottom-nav-height));
+    height: calc(100vh - var(--bottom-nav-height));
+    height: calc(100dvh - var(--bottom-nav-height) - env(safe-area-inset-bottom, 0px));
   }
 
   .conversations-sidebar {
     position: fixed;
     left: -280px;
-    top: var(--header-height);
-    bottom: var(--bottom-nav-height);
+    top: 0;
+    bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
     width: 280px;
     z-index: var(--z-sidebar);
     transition: left var(--transition-base);
@@ -596,8 +602,8 @@
     display: none;
     position: fixed;
     inset: 0;
-    top: var(--header-height);
-    bottom: var(--bottom-nav-height);
+    top: 0;
+    bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
     background: rgba(0, 0, 0, 0.4);
     z-index: calc(var(--z-sidebar) - 1);
   }
@@ -629,6 +635,24 @@
 }
 
 @media (max-width: 639px) {
+  .ai-header {
+    flex-wrap: nowrap;
+    padding: var(--spacing-2) var(--spacing-3);
+  }
+
+  .ai-header > div:first-child,
+  .ai-header > div:first-child > div {
+    min-width: 0;
+  }
+
+  .ai-header .page-header-actions {
+    flex-shrink: 0;
+  }
+
+  .ai-header .badge {
+    display: none;
+  }
+
   .chat-messages {
     padding: var(--spacing-4);
   }

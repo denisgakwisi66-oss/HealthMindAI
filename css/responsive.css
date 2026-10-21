@@ -514,3 +514,180 @@
       padding-bottom: max(calc(var(--bottom-nav-height) + var(--spacing-6)), calc(var(--bottom-nav-height) + var(--spacing-6) + env(safe-area-inset-bottom)));
     }
   }
+
+  /* ===== MOBILE APP VIEWPORT AND CONTENT FIT ===== */
+
+  html,
+  body {
+    width: 100%;
+    min-width: 320px;
+    overflow-x: clip;
+  }
+
+  .app-container,
+  .main-content,
+  .page-content,
+  .grid,
+  .card {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .app-container {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .page-content {
+    overflow-wrap: anywhere;
+  }
+
+  .hero-section .grid,
+  .hero-section .grid > *,
+  .ai-preview,
+  .ai-preview .card-glass,
+  .page-content .grid > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ai-preview .card-glass {
+    overflow-wrap: anywhere;
+  }
+
+  .table-responsive,
+  .table-container,
+  .overflow-x-auto {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  img,
+  video,
+  iframe {
+    max-width: 100%;
+  }
+
+  @media (max-width: 1023px) {
+    .main-content {
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    #page-content > .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    #page-content > .grid > *,
+    #page-content > section,
+    #page-content .card {
+      min-width: 0;
+    }
+
+    #ai .grid {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    #ai .card-glass > div:last-child {
+      flex-wrap: wrap;
+    }
+
+    #ai .card-glass > div:last-child input {
+      min-width: 0;
+      flex: 1 1 10rem;
+    }
+
+    .page-header {
+      padding-left: max(var(--spacing-4), env(safe-area-inset-left));
+      padding-right: max(var(--spacing-4), env(safe-area-inset-right));
+      gap: var(--spacing-3);
+    }
+
+    .page-header > *,
+    .page-header-title,
+    .page-header-actions {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .page-header-title {
+      overflow-wrap: anywhere;
+    }
+
+    .page-content {
+      padding-bottom: calc(var(--bottom-nav-height) + var(--spacing-6) + env(safe-area-inset-bottom, 0px));
+    }
+
+    .bottom-nav {
+      height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+      padding: var(--spacing-2) max(var(--spacing-2), env(safe-area-inset-right)) env(safe-area-inset-bottom, 0px) max(var(--spacing-2), env(safe-area-inset-left));
+    }
+
+    .bottom-nav-items {
+      min-width: 0;
+    }
+
+    .bottom-nav-item {
+      min-width: 0;
+      flex: 1 1 0;
+      padding-left: var(--spacing-1);
+      padding-right: var(--spacing-1);
+    }
+
+    .bottom-nav-item .nav-label {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .modal-overlay {
+      align-items: center;
+      justify-content: center;
+      padding: max(var(--spacing-3), env(safe-area-inset-top)) max(var(--spacing-3), env(safe-area-inset-right)) max(var(--spacing-3), env(safe-area-inset-bottom)) max(var(--spacing-3), env(safe-area-inset-left));
+    }
+
+    .modal {
+      width: min(100%, 640px);
+      max-width: 100%;
+      max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - var(--spacing-6));
+      margin: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+  }
+
+  @media (max-width: 639px) {
+    #page-content > .grid {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .page-header {
+      align-items: flex-start;
+    }
+
+    .page-header-actions {
+      gap: var(--spacing-2);
+    }
+
+    .page-content {
+      padding-left: max(var(--spacing-4), env(safe-area-inset-left));
+      padding-right: max(var(--spacing-4), env(safe-area-inset-right));
+    }
+
+    .form-row,
+    .form-grid,
+    .stats-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .modal {
+      padding: var(--spacing-4);
+    }
+
+    footer .grid {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+  }

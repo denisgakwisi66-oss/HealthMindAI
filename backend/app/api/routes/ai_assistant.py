@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Any, AsyncIterator
 
+import httpx
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
@@ -16,7 +17,7 @@ from app.api.dependencies.database import get_db
 from app.api.dependencies.rate_limit import rate_limit
 from app.core.audit import log_audit
 from app.core.config import settings
-from app.core.exceptions import ApiException, NotFoundError
+from app.core.exceptions import ApiException, NotFoundError, ServiceUnavailableError
 from app.models.ai import AIConversation, AIMessage
 from app.models.user import User
 from app.services.ai import ask_gemini, stream_gemini
@@ -24,12 +25,214 @@ from app.services.ai import ask_gemini, stream_gemini
 router = APIRouter(prefix='/api/ai', tags=['ai-assistant'])
 
 MAX_HISTORY = 50  # context window in messages sent to the provider
+GEMINI_LIVE_TOKEN_URL = 'https://generativelanguage.googleapis.com/v1beta/auth_tokens'
+GEMINI_LIVE_WEBSOCKET_URL = (
+    'wss://generativelanguage.googleapis.com/ws/'
+    'google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained'
+)
+GEMINI_LIVE_INSTRUCTIONS = (
+    'You are HealthMind AI, a supportive health information assistant, not a doctor. '
+    'Never diagnose or replace a clinician. Give clear, cautious general health information '
+    'and encourage professional care for personal medical decisions. Automatically detect '
+    'whether the user is speaking English, French, or Kinyarwanda and respond naturally in '
+    'that language. If the user may be experiencing an emergency, immediately tell them to '
+    'seek urgent medical attention and call their local emergency services; if they are in '
+    'Rwanda, tell them to call 112. Do not delay escalation with questions or routine advice. '
+    'You can use app tools to show the signed-in user their appointments, available doctors '
+    'and slots, medications, and medical-record titles. To book an appointment, collect the '
+    'doctor, date, and available time, then request the book_appointment tool; the app will '
+    'ask the user to confirm before anything is booked. To add medication, only record a '
+    'medicine, dosage, and schedule that the user says was prescribed by their clinician; '
+    'never recommend, prescribe, infer, or change a medicine or dosage. The app will show '
+    'the exact medication details and require confirmation before saving. If details are '
+    'missing, ask the user rather than guessing. Use cancel_appointment for cancellations; '
+    'rescheduling means separately confirming the cancellation and the new booking. For '
+    'medication reminders, guide the user to the medication page and never imply a reminder '
+    'was scheduled unless the app confirms it.'
+)
+
+GEMINI_LIVE_TOOLS = [
+    {
+        'functionDeclarations': [
+            {
+                'name': 'list_appointments',
+                'description': 'List the signed-in user’s appointments.',
+                'parameters': {'type': 'OBJECT', 'properties': {}},
+            },
+            {
+                'name': 'find_doctors',
+                'description': 'Find doctors currently accepting new patients, optionally filtered by specialty.',
+                'parameters': {
+                    'type': 'OBJECT',
+                    'properties': {'specialty': {'type': 'STRING', 'description': 'Optional medical specialty.'}},
+                },
+            },
+            {
+                'name': 'get_available_slots',
+                'description': 'Get appointment times that are actually available for one doctor on a date.',
+                'parameters': {
+                    'type': 'OBJECT',
+                    'properties': {
+                        'doctor_id': {'type': 'STRING'},
+                        'date': {'type': 'STRING', 'description': 'Date as YYYY-MM-DD.'},
+                    },
+                    'required': ['doctor_id', 'date'],
+                },
+            },
+            {
+                'name': 'book_appointment',
+                'description': 'Request an appointment booking. The app requires explicit user confirmation before it is created.',
+                'parameters': {
+                    'type': 'OBJECT',
+                    'properties': {
+                        'doctor_id': {'type': 'STRING'},
+                        'date': {'type': 'STRING', 'description': 'Date as YYYY-MM-DD.'},
+                        'time': {'type': 'STRING', 'description': 'Time as 24-hour HH:MM, chosen from available slots.'},
+                        'specialty': {'type': 'STRING'},
+                        'notes': {'type': 'STRING', 'description': 'Optional reason for the visit.'},
+                    },
+                    'required': ['doctor_id', 'date', 'time'],
+                },
+            },
+            {
+                'name': 'cancel_appointment',
+                'description': 'Request cancellation of one of the user’s appointments. The app requires explicit confirmation.',
+                'parameters': {
+                    'type': 'OBJECT',
+                    'properties': {
+                        'appointment_id': {'type': 'INTEGER'},
+                        'reason': {'type': 'STRING'},
+                    },
+                    'required': ['appointment_id'],
+                },
+            },
+            {
+                'name': 'list_medications',
+                'description': 'List medications on the signed-in user’s medication tracker.',
+                'parameters': {'type': 'OBJECT', 'properties': {}},
+            },
+            {
+                'name': 'add_prescribed_medication',
+                'description': 'Request saving a medication only when the user says it was prescribed by a clinician; never suggest a medicine or dosage. The app requires user confirmation.',
+                'parameters': {
+                    'type': 'OBJECT',
+                    'properties': {
+                        'name': {'type': 'STRING'},
+                        'dosage': {'type': 'STRING'},
+                        'frequency': {'type': 'STRING'},
+                        'schedule': {'type': 'STRING', 'description': 'Optional schedule, e.g. 09:00.'},
+                        'instructions': {'type': 'STRING'},
+                        'start_date': {'type': 'STRING', 'description': 'Optional date as YYYY-MM-DD.'},
+                        'end_date': {'type': 'STRING', 'description': 'Optional date as YYYY-MM-DD.'},
+                    },
+                    'required': ['name', 'dosage', 'frequency'],
+                },
+            },
+            {
+                'name': 'list_medical_records',
+                'description': 'List the signed-in user’s medical-record titles and types, without file contents.',
+                'parameters': {'type': 'OBJECT', 'properties': {}},
+            },
+            {
+                'name': 'open_app_section',
+                'description': 'Give the user a link to the relevant HealthMind app section.',
+                'parameters': {
+                    'type': 'OBJECT',
+                    'properties': {
+                        'section': {
+                            'type': 'STRING',
+                            'enum': ['appointments', 'medications', 'records', 'doctors', 'emergency', 'settings'],
+                        },
+                    },
+                    'required': ['section'],
+                },
+            },
+        ],
+    },
+]
 
 
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
     conversation_id: int | None = None
     context: str | None = None
+
+
+@router.post(
+    '/gemini/live-token',
+    dependencies=[Depends(rate_limit(settings.rate_limit_ai_per_minute))],
+)
+async def create_gemini_live_token(
+    current_user: User = Depends(get_current_user),
+) -> dict[str, Any]:
+    """Mint a short-lived, single-use token for a browser Gemini Live session."""
+    if not settings.ai_available:
+        raise ServiceUnavailableError(
+            'Gemini Live voice is not configured. You can still use text chat.'
+        )
+
+    now = datetime.now(timezone.utc)
+    session_config = {
+        'tools': GEMINI_LIVE_TOOLS,
+        'systemInstruction': {'parts': [{'text': GEMINI_LIVE_INSTRUCTIONS}]},
+        'inputAudioTranscription': {},
+        'outputAudioTranscription': {},
+        'sessionResumption': {},
+        'generationConfig': {
+            'responseModalities': ['AUDIO'],
+            'speechConfig': {
+                'voiceConfig': {
+                    'prebuiltVoiceConfig': {'voiceName': 'Aoede'},
+                },
+            },
+        },
+    }
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            response = await client.post(
+                GEMINI_LIVE_TOKEN_URL,
+                headers={
+                    'x-goog-api-key': settings.gemini_api_key.get_secret_value(),
+                    'Content-Type': 'application/json',
+                },
+                json={
+                    'uses': 1,
+                    'expireTime': (now + timedelta(minutes=30)).isoformat().replace('+00:00', 'Z'),
+                    'newSessionExpireTime': (now + timedelta(minutes=1)).isoformat().replace('+00:00', 'Z'),
+                    'bidiGenerateContentSetup': {
+                        'model': f'models/{settings.gemini_live_model}',
+                        **session_config,
+                    },
+                },
+            )
+    except httpx.HTTPError as exc:
+        logger.exception('Gemini Live token request failed for user %s', current_user.id)
+        raise ServiceUnavailableError(
+            'Gemini Live voice is temporarily unavailable. Please try again or use text chat.'
+        ) from exc
+
+    if response.is_error:
+        logger.error('Gemini Live token request failed with HTTP {}.', response.status_code)
+        raise ServiceUnavailableError(
+            'Gemini Live could not create a voice session. Please try again or use text chat.'
+        )
+
+    try:
+        token = response.json().get('name')
+    except (ValueError, AttributeError):
+        token = None
+    if not isinstance(token, str) or not token:
+        logger.error('Gemini Live token endpoint returned an invalid response.')
+        raise ServiceUnavailableError(
+            'Gemini Live returned an invalid session token. Please use text chat.'
+        )
+
+    return {
+        'token': token,
+        'model': settings.gemini_live_model,
+        'websocket_url': GEMINI_LIVE_WEBSOCKET_URL,
+        'config': session_config,
+    }
 
 
 class RegenerateRequest(BaseModel):

@@ -182,3 +182,18 @@
     justify-content: center;
   }
 }
+
+@media (max-width: 480px) {
+  .record-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .record-tab {
+    min-width: 0;
+    padding: var(--spacing-2);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

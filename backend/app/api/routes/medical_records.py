@@ -1,27 +1,40 @@
 from __future__ import annotations
 
+import mimetypes
 import uuid
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.database import get_db
 from app.core.audit import log_audit
 from app.core.config import settings
-from app.core.exceptions import ApiException, AuthorizationError, NotFoundError
+from app.core.exceptions import (
+    ApiException,
+    AuthorizationError,
+    NotFoundError,
+    ServiceUnavailableError,
+)
 from app.models.appointment import Appointment
 from app.models.medical_record import MedicalRecord, RecordType
 from app.models.user import User, UserRole
+from app.services.medical_record_storage import (
+    delete_medical_record,
+    load_medical_record,
+    store_medical_record,
+)
+from loguru import logger
 
 router = APIRouter(prefix='/api', tags=['medical-records'])
 
 ALLOWED_EXTENSIONS = {'.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'}
-STORAGE_DIR = Path(settings.storage_dir)
 
 
 def _record_to_dict(r: MedicalRecord) -> dict[str, Any]:
@@ -70,21 +83,6 @@ async def _validate_upload(file: UploadFile | None) -> None:
         if size > max_bytes:
             raise ApiException('VALIDATION_ERROR', f'File is too large. Maximum size is {settings.max_upload_size_mb}MB.')
     await file.seek(0)
-
-
-async def _store_file(file: UploadFile, original_name: str) -> tuple[str, str, int]:
-    STORAGE_DIR.mkdir(parents=True, exist_ok=True)
-    safe_name = f'{uuid.uuid4().hex}{Path(original_name).suffix.lower()}'
-    dest = STORAGE_DIR / safe_name
-    size = 0
-    with open(dest, 'wb') as out:
-        while True:
-            chunk = await file.read(1024 * 512)
-            if not chunk:
-                break
-            size += len(chunk)
-            out.write(chunk)
-    return safe_name, original_name, size
 
 
 @router.get('/medical-records')
@@ -153,10 +151,12 @@ async def create_record(
     file_path = None
     file_size = None
     if file and file.filename:
-        stored, original, size = await _store_file(file, file.filename)
-        file_name = original
-        file_path = stored
-        file_size = size
+        original_name = Path(file.filename).name
+        file_path = f'{uuid.uuid4().hex}{Path(original_name).suffix.lower()}'
+        content = await file.read()
+        await store_medical_record(file_path, content, file.content_type)
+        file_name = original_name
+        file_size = len(content)
 
     record = MedicalRecord(
         patient_id=target_patient,
@@ -169,8 +169,17 @@ async def create_record(
         file_size=file_size,
     )
     db.add(record)
-    await db.commit()
-    await db.refresh(record)
+    try:
+        await db.commit()
+        await db.refresh(record)
+    except SQLAlchemyError:
+        await db.rollback()
+        if file_path:
+            try:
+                await delete_medical_record(file_path)
+            except (ServiceUnavailableError, OSError):
+                logger.exception('Failed to clean up an uploaded medical record after database failure.')
+        raise
     await log_audit(db, action='record.create', user_id=current_user.id,
                     resource_type='medical_record', resource_id=record.id,
                     details={'record_type': rtype.value}, request=request)
@@ -182,7 +191,7 @@ async def download_record(
     record_id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> FileResponse:
+) -> Response:
     result = await db.execute(select(MedicalRecord).where(MedicalRecord.id == record_id))
     record = result.scalar_one_or_none()
     if not record:
@@ -191,10 +200,15 @@ async def download_record(
         raise AuthorizationError('You do not have permission to download this record.')
     if not record.file_path:
         raise NotFoundError('This record has no attached file.')
-    file_path = STORAGE_DIR / record.file_path
-    if not file_path.exists():
-        raise NotFoundError('File missing on server.')
-    return FileResponse(str(file_path), filename=record.file_name or f'record-{record.id}')
+    file_name = record.file_name or f'record-{record.id}'
+    return Response(
+        content=await load_medical_record(record.file_path),
+        media_type=mimetypes.guess_type(file_name)[0] or 'application/octet-stream',
+        headers={
+            'Cache-Control': 'private, no-store',
+            'Content-Disposition': f"attachment; filename*=UTF-8''{quote(file_name, safe='')}",
+        },
+    )
 
 
 @router.delete('/medical-records/{record_id}')
@@ -212,6 +226,8 @@ async def delete_record(
         raise AuthorizationError('You can only delete your own records.')
     if current_user.role == UserRole.DOCTOR and record.doctor_id != current_user.id:
         raise AuthorizationError('You can only delete records you authored.')
+    if record.file_path:
+        await delete_medical_record(record.file_path)
     await db.delete(record)
     await db.commit()
     await log_audit(db, action='record.delete', user_id=current_user.id,

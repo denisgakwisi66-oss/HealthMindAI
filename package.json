@@ -1,0 +1,27 @@
+{
+  "name": "healthmind-ai",
+  "private": true,
+  "scripts": {
+    "build:voice": "esbuild js/voice-assistant.tsx --bundle --minify --format=esm --target=es2020 --outfile=js/voice-assistant.js",
+    "typecheck:voice": "tsc --noEmit",
+    "build:mobile-web": "npm run build:voice && node scripts/prepare-mobile.mjs",
+    "mobile:add:android": "npm run build:voice && node scripts/prepare-mobile.mjs --require-api-url && cap add android",
+    "mobile:add:ios": "npm run build:voice && node scripts/prepare-mobile.mjs --require-api-url && cap add ios",
+    "mobile:sync:android": "npm run build:voice && node scripts/prepare-mobile.mjs --require-api-url && cap sync android",
+    "mobile:sync:ios": "npm run build:voice && node scripts/prepare-mobile.mjs --require-api-url && cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/ios": "^7.4.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "esbuild": "^0.25.5",
+    "typescript": "^5.8.3"
+  }
+}

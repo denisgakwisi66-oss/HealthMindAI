@@ -35,9 +35,10 @@ async def seed() -> None:
 
     headers = {
         'apikey': settings.supabase_service_role_key.get_secret_value(),
-        'Authorization': f'Bearer {settings.supabase_service_role_key.get_secret_value()}',
         'Content-Type': 'application/json',
     }
+    if not settings.supabase_uses_new_api_keys:
+        headers['Authorization'] = f'Bearer {settings.supabase_service_role_key.get_secret_value()}'
 
     async with httpx.AsyncClient(base_url=f'{settings.supabase_url}/auth/v1', headers=headers, timeout=15) as client:
         for user_data in DEMO_USERS:

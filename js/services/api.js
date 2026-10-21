@@ -8,10 +8,11 @@
  */
 
 import { getSupabase } from './supabase-client.js';
+import { apiUrl } from './api-url.js';
 
 const API = (() => {
   const CONFIG = {
-    BASE_URL: import.meta?.env?.VITE_API_URL || '/api',
+    BASE_URL: import.meta?.env?.VITE_API_URL || apiUrl('/api'),
     TIMEOUT: 30000,
     RETRY_ATTEMPTS: 3,
     RETRY_DELAY: 1000,
@@ -67,7 +68,7 @@ const API = (() => {
       status: response.status,
       statusText: response.statusText,
       data,
-      message: data?.error?.message || data?.message || response.statusText || 'An error occurred',
+      message: data?.error?.message || data?.detail?.error?.message || data?.message || response.statusText || 'An error occurred',
     };
 
     if (response.status === 401) {

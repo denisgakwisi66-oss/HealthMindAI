@@ -35,6 +35,10 @@ SYSTEM_PROMPT = (
     "   people's medical information.\n"
     "7. Keep answers clear, concise and helpful. General health information is "
     "   fine; clinical decisions belong to healthcare professionals.\n"
+    "8. Detect whether the user is communicating in English, French, or "
+    "   Kinyarwanda and respond in that same language.\n"
+    "9. If the user may be in Rwanda during an emergency, advise calling 112 "
+    "   immediately; otherwise advise their local emergency number.\n"
 )
 
 
@@ -65,6 +69,27 @@ def _extract_text(data: dict) -> str:
     return ''.join(text_parts)
 
 
+def _quota_error_message(response: httpx.Response) -> str | None:
+    try:
+        error = response.json().get('error', {})
+    except (ValueError, AttributeError):
+        return None
+    if not isinstance(error, dict):
+        return None
+
+    status = str(error.get('status', '')).upper()
+    message = str(error.get('message', '')).lower()
+    if status == 'RESOURCE_EXHAUSTED' and any(
+        marker in message for marker in ('quota', 'free_tier', 'rate limit')
+    ):
+        return (
+            "Gemini text chat has reached its current API quota. Check the project's "
+            'Google AI quota and billing, or wait for the quota to reset. Live voice may '
+            'remain available.'
+        )
+    return None
+
+
 async def ask_gemini(messages: list[dict], max_tokens: int | None = None) -> str:
     """Send a message history to Gemini and return the assistant text.
 
@@ -91,12 +116,16 @@ async def ask_gemini(messages: list[dict], max_tokens: int | None = None) -> str
             async with httpx.AsyncClient(timeout=60) as client:
                 resp = await client.post(url, json=payload, headers=headers)
             if resp.status_code == 429:
+                quota_message = _quota_error_message(resp)
+                if quota_message:
+                    logger.warning('Gemini text-generation quota is exhausted.')
+                    raise RuntimeError(quota_message)
                 if attempt < 2:
                     await asyncio.sleep(1.5 * (attempt + 1))
                     continue
                 raise RuntimeError('The AI service is busy. Please try again shortly.')
             if resp.status_code >= 400:
-                logger.error(f'Gemini API error {resp.status_code}: {resp.text[:300]}')
+                logger.error('Gemini API error {}.', resp.status_code)
                 raise RuntimeError('The AI service returned an error. Please try again.')
             data = resp.json()
             text = _extract_text(data)
@@ -134,7 +163,11 @@ async def stream_gemini(messages: list[dict]) -> AsyncIterator[str]:
         try:
             async with client.stream('POST', url, json=payload, headers=headers) as resp:
                 if resp.status_code >= 400:
-                    logger.error(f'Gemini stream error {resp.status_code}')
+                    quota_message = _quota_error_message(resp)
+                    if quota_message:
+                        logger.warning('Gemini text-generation quota is exhausted.')
+                        raise RuntimeError(quota_message)
+                    logger.error('Gemini stream error {}.', resp.status_code)
                     raise RuntimeError('The AI service returned an error. Please try again.')
                 full = ''
                 import json

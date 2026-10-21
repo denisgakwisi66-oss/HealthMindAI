@@ -65,13 +65,14 @@ def create_app() -> FastAPI:
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'DENY'
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-        response.headers['Permissions-Policy'] = 'geolocation=(self), camera=(), microphone=()'
+        response.headers['Permissions-Policy'] = 'geolocation=(self), camera=(), microphone=(self)'
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; "
             f"script-src 'self' https://esm.sh https://cdn.jsdelivr.net https://www.gstatic.com; "
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
             "img-src 'self' data: https:; "
-            f"connect-src 'self' {settings.supabase_url} https://esm.sh https://generativelanguage.googleapis.com; "
+            f"connect-src 'self' {settings.supabase_url} https://esm.sh https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com; "
+            "media-src 'self' blob:; "
             "font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none'"
         )
         return response
@@ -134,4 +135,3 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             }
         },
     )
-

@@ -19,6 +19,10 @@ async def get_public_config() -> dict:
     anon key are meant to be public (Supabase's own security model relies on
     RLS/JWT verification, not on keeping these secret) — never put the
     service-role key or JWT secret here."""
+    if not settings.supabase_auth_configured:
+        raise ServiceUnavailableError(
+            'Account services are not configured. Set a valid Supabase URL and anon key in backend/.env.'
+        )
     return {
         'supabase_url': settings.supabase_url,
         'supabase_anon_key': settings.supabase_anon_key.get_secret_value(),

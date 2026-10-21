@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/css/animations.css">
   <link rel="stylesheet" href="/css/responsive.css">
   <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/voice-assistant.css">
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
@@ -86,6 +87,7 @@
                 Understand your health. Organize your care. Stay connected with AI-powered healthcare guidance.
               </p>
               <div class="flex flex-wrap gap-4" style="margin-bottom: var(--spacing-8);">
+                <div id="healthmind-voice-root"></div>
                 <a href="/ai-assistant.html" class="btn btn-ai btn-lg">
                   🤖 Talk to HealthMind AI
                 </a>
@@ -543,5 +545,6 @@
 
   <!-- JavaScript -->
   <script type="module" src="/js/app.js"></script>
+  <script type="module" src="/js/voice-assistant.js"></script>
 </body>
 </html>

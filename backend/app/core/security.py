@@ -19,7 +19,7 @@ async def _fetch_jwks() -> list[dict]:
     key (ES256/ECC P-256 here) rather than a single shared HS256 secret —
     verification means matching the token's `kid` against Supabase's public
     JWKS, not decoding with a static secret."""
-    url = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
+    url = settings.supabase_jwks_url or f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
     async with httpx.AsyncClient(timeout=10) as client:
         resp = await client.get(url)
         resp.raise_for_status()

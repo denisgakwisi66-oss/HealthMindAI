@@ -7,6 +7,7 @@
 import App from '/js/app.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
+import { apiUrl } from '/js/services/api-url.js';
 import Toast from '/js/toast.js';
 import { escapeText as esc } from '/js/security.js';
 
@@ -214,7 +215,7 @@ const MedicalRecords = (() => {
   const downloadRecord = async (id) => {
     try {
       const token = await API.getAccessToken();
-      const response = await fetch(`/api/medical-records/${id}/download`, {
+      const response = await fetch(apiUrl(`/api/medical-records/${id}/download`), {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!response.ok) throw new Error('Download failed');

@@ -3,6 +3,7 @@
 # ============================================
 
 # --- Python ---
+node_modules/
 __pycache__/
 *.py[cod]
 *$py.class
@@ -46,6 +47,16 @@ Thumbs.db
 /*.ps1
 /*.bat
 HealthMindAI/
+www/
+android/.gradle/
+android/local.properties
+android/app/build/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+ios/App/Pods/
+ios/App/DerivedData/
+ios/App/App/public/
+ios/App/App/capacitor.config.json
 
 # local n8n secret helper
 n8n/.last-generated-secret.txt

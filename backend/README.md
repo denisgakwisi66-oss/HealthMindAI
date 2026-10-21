@@ -17,9 +17,11 @@ in Supabase's Postgres.
 
 1. Create a Supabase project (see **Supabase project setup** below) and run
    the schema bootstrap.
-2. Copy `.env.example` to `.env` and fill in every `SUPABASE_*` value from
-   your project's dashboard, plus a `DATABASE_URL` pointing at its Postgres
-   connection string and a `GEMINI_API_KEY`.
+2. Copy `.env.example` to `.env` and fill in the `SUPABASE_URL`,
+   `SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY` values from your
+   project's dashboard, plus a `DATABASE_URL` pointing at its Postgres
+   connection string and a `GEMINI_API_KEY`. Set `GEMINI_LIVE_MODEL` to the
+   Gemini Live model enabled for your API key.
 3. Install dependencies:
 
 ```bash
@@ -34,8 +36,8 @@ python -m pip install -r requirements.txt
    `backend/alembic/versions/` — the initial revision contains the same SQL).
 3. **Authentication → Providers** → confirm Email/Password is enabled;
    enable Google there if you want the Google sign-in button to work.
-4. **Settings → API** → copy the **Project URL**, **anon/publishable key**,
-   and **service_role/secret key**. No separate JWT secret is needed — this
+4. **Settings → API Keys** → copy the **Project URL**, **publishable key**,
+   and **secret key**. No separate JWT secret is needed — this
    app verifies session tokens against the project's public JWKS at runtime
    (`app/core/security.py`), which works for both the legacy shared-secret
    projects and the newer asymmetric-key ones.
@@ -60,6 +62,23 @@ Then open <http://localhost:8000>.
   Set `VITE_API_URL` if you serve the frontend from a separate origin (Vite).
 - The frontend gets its Supabase URL/anon key from `GET /api/config/public`
   (backed by your `.env`) — never hardcode them into the shipped JS.
+
+### Gemini Live voice assistant
+
+Set `GEMINI_API_KEY` and a Live API-enabled `GEMINI_LIVE_MODEL` in
+`backend/.env`, then build the React/TypeScript widget from the repository root
+with `npm install` and `npm run build:voice`. The authenticated
+`POST /api/ai/gemini/live-token` endpoint exchanges the server-only key for a
+short-lived, single-use token. The browser uses that token to connect to Gemini
+Live over a WebSocket; voice audio is streamed to Gemini and is not stored by
+this application. Text fallback uses the existing AI chat service and its
+normal conversation storage. During Live voice, the assistant can look up
+appointments, doctors, available slots, medications, and medical-record
+metadata. Booking, cancellation, and adding a medication require an explicit
+confirmation in the widget and use the same authenticated application APIs as
+the corresponding pages. The assistant may only record medication details the
+user says were prescribed; it must not prescribe or infer medication or dosage.
+Microphone access requires HTTPS or localhost.
 
 ## Run with Docker
 

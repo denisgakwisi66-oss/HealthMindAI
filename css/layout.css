@@ -17,7 +17,17 @@
   .app-container-public .main-content {
     margin-left: 0 !important;
   }
-  
+
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal-overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-background);
+  }
+
   /* ===== SIDEBAR ===== */
   
   .sidebar {

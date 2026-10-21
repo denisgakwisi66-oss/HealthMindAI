@@ -13,7 +13,7 @@ from app.api.dependencies.database import get_db
 from app.api.dependencies.rate_limit import rate_limit
 from app.core.audit import log_audit
 from app.core.config import settings
-from app.core.exceptions import ApiException
+from app.core.exceptions import ApiException, ServiceUnavailableError
 from starlette.status import HTTP_502_BAD_GATEWAY
 from app.models.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -55,6 +55,13 @@ class RegisterRequest(BaseModel):
         return value if value in ('patient', 'doctor') else 'patient'
 
 
+def _supabase_admin_headers() -> dict[str, str]:
+    headers = {'apikey': settings.supabase_service_role_key.get_secret_value()}
+    if not settings.supabase_uses_new_api_keys:
+        headers['Authorization'] = f'Bearer {settings.supabase_service_role_key.get_secret_value()}'
+    return headers
+
+
 def _parse_dob(value: str | None) -> date | None:
     if not value:
         return None
@@ -76,13 +83,15 @@ async def register(payload: RegisterRequest) -> dict[str, str]:
     credentials (supabase.auth.signInWithPassword), exactly like a returning
     user logging in.
     """
+    if not settings.supabase_admin_configured:
+        raise ServiceUnavailableError(
+            'Account creation is not configured. Set valid Supabase URL, anon key, and service-role key in backend/.env.'
+        )
+
     async with httpx.AsyncClient(timeout=15) as client:
         resp = await client.post(
             f'{settings.supabase_url}/auth/v1/admin/users',
-            headers={
-                'apikey': settings.supabase_service_role_key.get_secret_value(),
-                'Authorization': f'Bearer {settings.supabase_service_role_key.get_secret_value()}',
-            },
+            headers=_supabase_admin_headers(),
             json={
                 'email': payload.email,
                 'password': payload.password,
@@ -99,7 +108,7 @@ async def register(payload: RegisterRequest) -> dict[str, str]:
     if 'already been registered' in resp.text.lower():
         raise ApiException('EMAIL_ALREADY_REGISTERED', 'An account with this email already exists.')
     if resp.status_code >= 400:
-        logger.error(f'Supabase admin create_user failed: {resp.status_code} {resp.text}')
+        logger.error('Supabase admin create_user failed with HTTP %s.', resp.status_code)
         raise ApiException(
             'REGISTRATION_FAILED', 'Could not create the account. Please try again.',
             status_code=HTTP_502_BAD_GATEWAY,
@@ -155,10 +164,7 @@ async def delete_account(
         async with httpx.AsyncClient(timeout=10) as client:
             await client.put(
                 f'{settings.supabase_url}/auth/v1/admin/users/{current_user.id}',
-                headers={
-                    'apikey': settings.supabase_service_role_key.get_secret_value(),
-                    'Authorization': f'Bearer {settings.supabase_service_role_key.get_secret_value()}',
-                },
+                headers=_supabase_admin_headers(),
                 json={'ban_duration': '876000h'},
             )
     except Exception as exc:

@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: healthmind-ai-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: MEDICAL_RECORDS_STORAGE_PROVIDER
+        value: supabase
+      - key: SUPABASE_STORAGE_BUCKET
+        value: medical-records
+      - key: FRONTEND_ORIGINS
+        value: https://localhost,capacitor://localhost
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: healthmind-ai-redis
+          property: connectionString
+      - key: REDIS_DB
+        value: "0"
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: keyvalue
+          name: healthmind-ai-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: keyvalue
+          name: healthmind-ai-redis
+          property: connectionString
+
+  - type: keyvalue
+    name: healthmind-ai-redis
+    plan: free
+    ipAllowList: []
