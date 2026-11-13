@@ -162,7 +162,7 @@ const Medications = (() => {
     container.querySelectorAll('.edit-med-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.id;
-        const med = medications.find(m => m.id === id);
+        const med = medications.find(m => String(m.id) === id);
         if (med) openEditModal(med);
       });
     });
@@ -210,9 +210,15 @@ const Medications = (() => {
     elements.confirmBtn.innerHTML = '<div class="spinner spinner-sm spinner-white"></div> Adding...';
 
     try {
-      await API.post('/medications', data);
-      
-      Toast.success('Added!', 'Medication added successfully.');
+      const result = await API.post('/medications', data);
+      if (result.reminder_email_configured) {
+        Toast.success('Added!', 'Medication saved. A reminder email will be sent at its scheduled time.');
+      } else {
+        Toast.warning(
+          'Medication saved',
+          'Scheduled reminder emails are not active until the backend email provider is configured.',
+        );
+      }
       closeModal();
       await loadMedications();
       await loadAdherence();
@@ -280,6 +286,10 @@ const Medications = (() => {
       Toast.warning('Incomplete', 'Please fill in all required fields.');
       return null;
     }
+    if (startDate && endDate && endDate < startDate) {
+      Toast.warning('Invalid dates', 'The end date must be on or after the start date.');
+      return null;
+    }
 
     return {
       name,
@@ -300,7 +310,10 @@ const Medications = (() => {
     elements.confirmBtn.textContent = 'Add Medication';
     elements.form.reset();
     elements.timeInput.value = '09:00';
-    elements.startDateInput.value = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    elements.startDateInput.value = new Date(
+      today.getTime() - today.getTimezoneOffset() * 60000,
+    ).toISOString().slice(0, 10);
     elements.modal.classList.add('active');
   };
 
@@ -336,15 +349,13 @@ const Medications = (() => {
       elements.cancelBtn.addEventListener('click', closeModal);
     }
 
-    if (elements.confirmBtn) {
-      elements.confirmBtn.addEventListener('click', () => {
-        if (editingId) {
-          updateMedication();
-        } else {
-          addMedication();
-        }
-      });
-    }
+    elements.modal?.querySelector('.modal-close')?.addEventListener('click', closeModal);
+
+    elements.form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (editingId) updateMedication();
+      else addMedication();
+    });
 
     if (elements.modal) {
       elements.modal.addEventListener('click', (e) => {

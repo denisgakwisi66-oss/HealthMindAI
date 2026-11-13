@@ -9,6 +9,7 @@
 import App from '/js/app.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
+import I18n from '/js/services/i18n.js';
 
 // =============================================================================
 // PREDEFINED RESPONSES (Quick Replies - Checked First)
@@ -244,6 +245,7 @@ const AIAssistant = (() => {
 
             // Setup event listeners
             setupEventListeners();
+            document.addEventListener('healthmind:languagechange', renderConversations);
 
             // Auto-resize textarea
             autoResizeTextarea();
@@ -750,7 +752,7 @@ const AIAssistant = (() => {
     const formatTime = (timestamp) => {
         if (!timestamp) return '';
         const date = new Date(timestamp);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return I18n.formatTime(date);
     };
 
     // =========================================================================
@@ -809,7 +811,7 @@ const AIAssistant = (() => {
 
         container.innerHTML = conversations.map(conv => {
             const isActive = conv.id === currentConversationId;
-            const time = conv.last_message_at ? new Date(conv.last_message_at).toLocaleDateString() : 'Recent';
+            const time = conv.last_message_at ? I18n.formatDate(conv.last_message_at) : 'Recent';
             const preview = conv.preview || 'No messages yet';
 
             return `

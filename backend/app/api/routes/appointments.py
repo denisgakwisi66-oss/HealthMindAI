@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -106,10 +106,16 @@ async def list_appointments(
         query = query.where(Appointment.doctor_id == current_user.id)
 
     if status and status != 'all':
-        try:
-            query = query.where(Appointment.status == AppointmentStatus(status))
-        except ValueError:
-            raise ApiException('VALIDATION_ERROR', 'Invalid appointment status filter.')
+        if status == 'upcoming':
+            query = query.where(Appointment.status.in_([
+                AppointmentStatus.SCHEDULED,
+                AppointmentStatus.CONFIRMED,
+            ]))
+        else:
+            try:
+                query = query.where(Appointment.status == AppointmentStatus(status))
+            except ValueError:
+                raise ApiException('VALIDATION_ERROR', 'Invalid appointment status filter.')
 
     if date_from:
         try:
@@ -153,7 +159,11 @@ async def get_doctors(specialty: str | None = None, db: AsyncSession = Depends(g
     query = (
         select(Doctor, User.full_name)
         .join(User, User.id == Doctor.user_id)
-        .where(User.is_active == True, Doctor.is_accepting_new == True)  # noqa: E712
+        .where(
+            User.is_active == True,  # noqa: E712
+            User.role == UserRole.DOCTOR,
+            Doctor.is_accepting_new == True,  # noqa: E712
+        )
     )
     if specialty:
         query = query.where(Doctor.specialty == specialty)
@@ -173,9 +183,13 @@ async def get_doctors(specialty: str | None = None, db: AsyncSession = Depends(g
 
 
 @router.get('/appointments/available-slots')
-async def get_available_slots(doctor_id: str, date: str, db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
+async def get_available_slots(
+    doctor_id: str,
+    appointment_date: str = Query(alias='date'),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
     try:
-        target_date = date.fromisoformat(date)
+        target_date = date.fromisoformat(appointment_date)
     except ValueError:
         raise ApiException('VALIDATION_ERROR', 'Date must be in YYYY-MM-DD format.')
 
@@ -187,7 +201,7 @@ async def get_available_slots(doctor_id: str, date: str, db: AsyncSession = Depe
     result = await db.execute(select(Availability).where(Availability.doctor_id == doctor_profile.id, Availability.weekday == weekday))
     windows = result.scalars().all()
 
-    if target_date < datetime.utcnow().date():
+    if target_date < datetime.now(timezone.utc).date():
         return {'slots': [], 'message': 'This date is in the past.'}
 
     all_slots: list[str] = []
@@ -215,7 +229,7 @@ async def create_appointment(
     except ValueError:
         raise ApiException('VALIDATION_ERROR', 'Date must be in YYYY-MM-DD format.')
 
-    if target_date < datetime.utcnow().date():
+    if target_date < datetime.now(timezone.utc).date():
         raise ApiException('VALIDATION_ERROR', 'You cannot book an appointment in the past.')
 
     doctor_profile = await _get_doctor_profile_by_user(db, payload.doctor_id)
@@ -263,13 +277,13 @@ async def create_appointment(
                     resource_type='appointment', resource_id=appointment.id, request=request)
 
     doctor_name = (await db.execute(select(User.full_name).where(User.id == payload.doctor_id))).scalar()
-    await notify_admin(
+    email_sent = await notify_admin(
         event_type='appointment_created',
         subject=f'New appointment: {current_user.full_name} with Dr. {doctor_name}',
         text_body=(
             f'{current_user.full_name} booked an appointment with Dr. {doctor_name}\n'
             f'Date: {target_date.isoformat()} at {payload.time}\n'
-            f'Reason: {payload.notes or "Not provided"}'
+            'Sign in to HealthMind AI to view appointment details.'
         ),
         resource_type='appointment', resource_id=appointment.id,
     )
@@ -286,7 +300,14 @@ async def create_appointment(
         'reason': payload.notes,
         'status': appointment.status.value if hasattr(appointment.status, 'value') else str(appointment.status),
     })
-    return _appointment_to_dict(appointment, f'Dr. {doctor_name}' if doctor_name else None, current_user.full_name)
+    return {
+        **_appointment_to_dict(
+            appointment,
+            f'Dr. {doctor_name}' if doctor_name else None,
+            current_user.full_name,
+        ),
+        'notification_email_sent': email_sent,
+    }
 
 
 @router.post('/appointments/{appointment_id}/cancel')

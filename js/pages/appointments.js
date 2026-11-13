@@ -9,6 +9,7 @@ import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
 import Toast from '/js/toast.js';
 import { escapeText as esc } from '/js/security.js';
+import I18n from '/js/services/i18n.js';
 
 const Appointments = (() => {
   // ===== STATE =====
@@ -57,6 +58,7 @@ const Appointments = (() => {
 
       // Setup event listeners
       setupEventListeners();
+      document.addEventListener('healthmind:languagechange', renderAppointments);
 
       // Hide loading
       App.hideLoading();
@@ -112,6 +114,8 @@ const Appointments = (() => {
   // ===== LOAD DOCTORS =====
 
   const loadDoctors = async (specialty) => {
+    elements.bookingDoctor.innerHTML = '<option value="">Loading doctors…</option>';
+    elements.bookingTime.innerHTML = '<option value="">Select a date and doctor first</option>';
     try {
       const params = specialty ? { specialty } : {};
       const response = await API.get('/appointments/doctors', { params });
@@ -126,22 +130,29 @@ const Appointments = (() => {
         option.textContent = `${doc.name} - ${doc.specialty || 'General'}`;
         select.appendChild(option);
       });
+      if (!doctors.length) {
+        select.innerHTML = '<option value="">No doctors currently available for this specialty</option>';
+        Toast.info('No doctors available', 'Choose another specialty or contact the clinic.');
+      }
     } catch (error) {
       console.error('Error loading doctors:', error);
       doctors = [];
+      elements.bookingDoctor.innerHTML = '<option value="">Could not load doctors</option>';
+      Toast.error('Doctors unavailable', error.message || 'Could not load doctors.');
     }
   };
 
   // ===== LOAD AVAILABLE SLOTS =====
 
   const loadAvailableSlots = async (doctorId, date) => {
+    const select = elements.bookingTime;
+    select.innerHTML = '<option value="">Loading available times…</option>';
     try {
       const response = await API.get('/appointments/available-slots', {
         params: { doctor_id: doctorId, date }
       });
       
       const slots = response.slots || [];
-      const select = elements.bookingTime;
       select.innerHTML = '<option value="">Select time...</option>';
       slots.forEach(slot => {
         const option = document.createElement('option');
@@ -149,10 +160,13 @@ const Appointments = (() => {
         option.textContent = slot;
         select.appendChild(option);
       });
+      if (!slots.length) {
+        select.innerHTML = '<option value="">No times available on this date</option>';
+      }
     } catch (error) {
       console.error('Error loading available slots:', error);
-      const select = elements.bookingTime;
-      select.innerHTML = '<option value="">No slots available</option>';
+      select.innerHTML = '<option value="">Could not load available times</option>';
+      Toast.error('Times unavailable', error.message || 'Could not load appointment times.');
     }
   };
 
@@ -177,7 +191,7 @@ const Appointments = (() => {
               ? 'Try adjusting your filters.' 
               : 'Book your first appointment today.'}
           </div>
-          ${!filters.status !== 'all' && !filters.search ? `
+          ${filters.status === 'all' && !filters.search && !filters.date ? `
             <button class="btn btn-primary" id="empty-book-btn">Book an Appointment</button>
           ` : ''}
         </div>
@@ -277,7 +291,7 @@ const Appointments = (() => {
       <div class="calendar-view active">
         <div class="calendar-header">
           <button class="btn btn-ghost btn-sm" id="calendar-prev">←</button>
-          <h4>${new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}</h4>
+          <h4>${I18n.formatMonth(new Date(currentYear, currentMonth))}</h4>
           <button class="btn btn-ghost btn-sm" id="calendar-next">→</button>
         </div>
         <div class="calendar-grid">
@@ -325,8 +339,8 @@ const Appointments = (() => {
 
   // ===== BOOK APPOINTMENT =====
 
-  const bookAppointment = async () => {
-    const form = elements.bookingForm;
+  const bookAppointment = async (event) => {
+    event?.preventDefault();
     const data = {
       specialty: elements.bookingSpecialty.value,
       doctor_id: elements.bookingDoctor.value,
@@ -340,14 +354,24 @@ const Appointments = (() => {
       Toast.warning('Incomplete', 'Please fill in all required fields.');
       return;
     }
+    const todayDate = new Date();
+    const localToday = new Date(todayDate.getTime() - todayDate.getTimezoneOffset() * 60000)
+      .toISOString().slice(0, 10);
+    if (data.date < localToday) {
+      Toast.warning('Invalid date', 'Choose today or a future date.');
+      return;
+    }
 
     elements.bookingConfirm.disabled = true;
     elements.bookingConfirm.innerHTML = '<div class="spinner spinner-sm spinner-white"></div> Booking...';
 
     try {
-      await API.post('/appointments', data);
-      
-      Toast.success('Booked!', 'Appointment booked successfully.');
+      const result = await API.post('/appointments', data);
+      if (result.notification_email_sent) {
+        Toast.success('Booked!', 'Appointment booked successfully.');
+      } else {
+        Toast.warning('Appointment booked', 'The appointment was booked, but its email notification could not be sent.');
+      }
       closeBookingModal();
       await loadAppointments();
       
@@ -386,9 +410,15 @@ const Appointments = (() => {
     elements.bookingTime.innerHTML = '<option value="">Select time...</option>';
     
     // Set min date to today
-    const today = new Date().toISOString().split('T')[0];
+    const localToday = new Date();
+    const today = new Date(localToday.getTime() - localToday.getTimezoneOffset() * 60000)
+      .toISOString().slice(0, 10);
     elements.bookingDate.min = today;
     elements.bookingDate.value = today;
+    elements.bookingConfirm.textContent = 'Confirm Booking';
+    elements.bookingConfirm.disabled = false;
+    delete elements.bookingConfirm.dataset.action;
+    delete elements.bookingConfirm.dataset.id;
 
     modal.classList.add('active');
   };
@@ -442,7 +472,7 @@ const Appointments = (() => {
   const formatMonth = (dateStr) => {
     if (!dateStr) return '---';
     const date = new Date(dateStr);
-    return date.toLocaleString('default', { month: 'short' });
+    return I18n.formatMonth(date, { month: 'short' });
   };
 
   // ===== EVENT LISTENERS =====
@@ -458,9 +488,8 @@ const Appointments = (() => {
       elements.bookingCancel.addEventListener('click', closeBookingModal);
     }
 
-    if (elements.bookingConfirm) {
-      elements.bookingConfirm.addEventListener('click', bookAppointment);
-    }
+    elements.bookingModal?.querySelector('.modal-close')?.addEventListener('click', closeBookingModal);
+    elements.bookingForm?.addEventListener('submit', bookAppointment);
 
     // Close modal on overlay click
     if (elements.bookingModal) {

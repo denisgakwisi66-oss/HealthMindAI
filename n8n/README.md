@@ -1,14 +1,15 @@
 # HealthMind × n8n Care Orchestrator
 
-These workflows turn HealthMind domain events into patient/admin emails,
-SOS fan-out, and scheduled appointment/medication reminders.
+These workflows turn HealthMind domain events into patient/admin emails and
+SOS fan-out. Appointment reminders and optional patient-facing medication
+reminders can also be sent from n8n.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
 | `healthmind-care-orchestrator.json` | Webhook router for live events |
-| `healthmind-reminders-cron.json` | Every-15-minutes poll for T-24h / T-1h appts + due meds |
+| `healthmind-reminders-cron.json` | Every-15-minutes poll for T-24h / T-1h appts + patient medication reminders |
 
 ## Backend env
 
@@ -61,6 +62,12 @@ X-HealthMind-Automation-Key: <N8N_WEBHOOK_SECRET>
 
 Timezone for schedule matching: `Africa/Kigali`.
 
+The FastAPI service independently sends a medication reminder email to
+`EMERGENCY_RECIPIENT` at the configured medication time (15-second polling,
+five-minute recovery window). If the n8n reminder workflow is active too, it
+also sends to the patient's email; disable its medication branch if that
+additional email is not wanted.
+
 ## Quick test without n8n UI
 
 Point `N8N_WEBHOOK_URL` at [webhook.site](https://webhook.site) temporarily, trigger book/SOS/register, confirm payloads arrive with `X-HealthMind-Event` + `X-HealthMind-Signature`.
@@ -69,4 +76,3 @@ Point `N8N_WEBHOOK_URL` at [webhook.site](https://webhook.site) temporarily, tri
 
 See [`LIVE-INTEGRATION.md`](LIVE-INTEGRATION.md) for the actual Cloud workflow
 (`$vars`, Gmail, HMAC soft-verify, webhook URL, publish checklist).
-

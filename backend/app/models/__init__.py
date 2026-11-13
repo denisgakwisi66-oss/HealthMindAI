@@ -7,6 +7,7 @@ from app.models.patient import Patient
 from app.models.doctor import Doctor, Availability
 from app.models.appointment import Appointment, AppointmentStatus
 from app.models.medication import Medication
+from app.models.medication_reminder import MedicationReminder
 from app.models.medical_record import MedicalRecord, RecordType
 from app.models.notification import Notification
 from app.models.ai import AIConversation, AIMessage
@@ -24,6 +25,7 @@ __all__ = [
     'Appointment',
     'AppointmentStatus',
     'Medication',
+    'MedicationReminder',
     'MedicalRecord',
     'RecordType',
     'Notification',

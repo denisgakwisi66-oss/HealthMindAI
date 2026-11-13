@@ -8,8 +8,8 @@ from app.db.base import Base
 
 
 class NotificationEmail(Base):
-    """A log of admin-facing notification emails (appointments, new
-    registrations, etc). No FK to users — the recipient is an operational
+    """A log of admin-facing notification emails (appointments, medications,
+    new registrations, etc). No FK to users — the recipient is an operational
     inbox, not a system account. Emergency alerts are logged separately in
     EmergencyEvent, which already has its own recipient/status columns."""
 

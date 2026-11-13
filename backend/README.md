@@ -34,8 +34,17 @@ python -m pip install -r requirements.txt
 2. **SQL Editor** → run the schema bootstrap script (ask whoever ran the
    FURPS/Supabase migration for the current copy, or find it in
    `backend/alembic/versions/` — the initial revision contains the same SQL).
-3. **Authentication → Providers** → confirm Email/Password is enabled;
-   enable Google there if you want the Google sign-in button to work.
+3. **Authentication → Providers → Google** → enable Google and enter the
+   OAuth client ID and secret from Google Cloud. In Google Cloud, add
+   `https://<project-ref>.supabase.co/auth/v1/callback` as an authorized
+   redirect URI (replace `<project-ref>` with the Supabase project reference).
+   In **Authentication → URL Configuration**, add the app's login and
+   registration callback URLs to the redirect allowlist, for example
+   `http://localhost:8000/login.html?oauth=google` and
+   `http://localhost:8000/register.html?oauth=google`, plus the corresponding
+   HTTPS URLs for each deployed app origin. The Google buttons return to the
+   page they were started from and route the signed-in user to the dashboard
+   for their account role.
 4. **Settings → API Keys** → copy the **Project URL**, **publishable key**,
    and **secret key**. No separate JWT secret is needed — this
    app verifies session tokens against the project's public JWKS at runtime
@@ -46,6 +55,27 @@ python -m pip install -r requirements.txt
    `postgresql+asyncpg://...`).
 6. To create demo accounts (patient/doctor/admin), run `python seed.py` from
    `backend/` once `.env` is filled in.
+
+### Admin access and doctor management
+
+Admin pages and APIs require an existing, active account with the `admin`
+role; there is no public admin sign-up or self-promotion path. Register the
+account you intend to use (for example, `denis0shimo@gmail.com`) and verify
+that you can sign in. Then, from `backend/`, run:
+
+```powershell
+python scripts/grant_admin.py --email denis0shimo@gmail.com
+```
+
+The command uses the local backend configuration, checks that the account
+already exists and is verified and active, and asks for an explicit typed
+confirmation before granting the role through Supabase's admin API. Never
+share the service-role key. After promotion, sign in at
+`http://localhost:8000/login.html`; the app routes admins to
+`/admin-dashboard.html`. The dashboard's **Add a Doctor** and
+**Manage doctors and specialties** links open User Management. Doctor creation
+requires a specialty, and admins can update specialties there. The doctor
+role is not available through public registration.
 
 ## Run Locally (Linux / macOS / Windows)
 

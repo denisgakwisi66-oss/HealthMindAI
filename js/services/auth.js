@@ -75,11 +75,58 @@ const AuthService = (() => {
 
   const loginWithGoogle = async () => {
     const supabase = await getSupabase();
-    const { error } = await supabase.auth.signInWithOAuth({
+    const redirectUrl = new URL(window.location.pathname, window.location.origin);
+    redirectUrl.searchParams.set('oauth', 'google');
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/dashboard.html` },
+      options: {
+        redirectTo: redirectUrl.toString(),
+        skipBrowserRedirect: true,
+        queryParams: { prompt: 'select_account' },
+      },
     });
     if (error) throw normalizeError(error);
+    if (!data?.url) {
+      throw new Error('Google sign-in could not be started. Please try again.');
+    }
+    window.location.assign(data.url);
+  };
+
+  const getDashboardPath = (user) => {
+    if (user?.role === 'doctor') return '/doctor-dashboard.html';
+    if (user?.role === 'admin') return '/admin-dashboard.html';
+    return '/dashboard.html';
+  };
+
+  const completeGoogleSignIn = async () => {
+    const callbackUrl = new URL(window.location.href);
+    if (callbackUrl.searchParams.get('oauth') !== 'google') return false;
+
+    const errorMessage = callbackUrl.searchParams.get('error_description')
+      || callbackUrl.searchParams.get('error')
+      || callbackUrl.searchParams.get('error_code');
+    callbackUrl.searchParams.delete('oauth');
+    callbackUrl.searchParams.delete('error');
+    callbackUrl.searchParams.delete('error_description');
+    callbackUrl.searchParams.delete('error_code');
+    callbackUrl.searchParams.delete('code');
+    window.history.replaceState(
+      window.history.state,
+      document.title,
+      `${callbackUrl.pathname}${callbackUrl.search}${callbackUrl.hash}`,
+    );
+
+    if (errorMessage) {
+      throw new Error('Google sign-in was cancelled or rejected. Check the Google provider setup and try again.');
+    }
+
+    const user = currentUser || await getCurrentUser();
+    if (!user) {
+      throw new Error('Google sign-in did not create an active HealthMind session. Please try again.');
+    }
+
+    window.location.replace(getDashboardPath(user));
+    return true;
   };
 
   const logout = async () => {
@@ -202,6 +249,8 @@ const AuthService = (() => {
   return {
     login,
     loginWithGoogle,
+    completeGoogleSignIn,
+    getDashboardPath,
     register,
     logout,
     getCurrentUser,

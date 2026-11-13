@@ -11,6 +11,7 @@ import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
 import Toast from '/js/toast.js';
 import { escapeText as esc } from '/js/security.js';
+import I18n from '/js/services/i18n.js';
 
 const Notifications = (() => {
   // ===== STATE =====
@@ -37,6 +38,7 @@ const Notifications = (() => {
       await loadNotifications();
 
       setupEventListeners();
+      document.addEventListener('healthmind:languagechange', renderNotifications);
 
       App.hideLoading();
 
@@ -199,9 +201,8 @@ const Notifications = (() => {
   const deleteNotification = async (id) => {
     try {
       await API.delete(`/notifications/${id}`);
-      
-      notifications = notifications.filter(n => n.id !== id);
       const wasUnread = notifications.find(n => n.id === id)?.read === false;
+      notifications = notifications.filter(n => n.id !== id);
       if (wasUnread) {
         unreadCount = Math.max(0, unreadCount - 1);
         updateBadge();
@@ -220,7 +221,17 @@ const Notifications = (() => {
     
     try {
       // Delete all one by one or use a bulk endpoint
-      await Promise.all(notifications.map(n => API.delete(`/notifications/${n.id}`)));
+      const results = await Promise.allSettled(
+        notifications.map(n => API.delete(`/notifications/${n.id}`)),
+      );
+      const failedCount = results.filter(result => result.status === 'rejected').length;
+      if (failedCount) {
+        notifications = notifications.filter((_, index) => results[index].status === 'rejected');
+        unreadCount = notifications.filter(n => !n.read).length;
+        updateBadge();
+        renderNotifications();
+        throw new Error(`${failedCount} notification(s) could not be deleted.`);
+      }
       
       notifications = [];
       unreadCount = 0;
@@ -271,7 +282,7 @@ const Notifications = (() => {
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
     
-    return date.toLocaleDateString();
+    return I18n.formatDate(date);
   };
 
   // ===== EVENT LISTENERS =====

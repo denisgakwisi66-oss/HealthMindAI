@@ -1,10 +1,15 @@
 from types import SimpleNamespace
 
+import httpx
 from pydantic import SecretStr
 
+from app.api.dependencies.database import get_db
 from app.api.routes import ai_assistant
 from app.api.routes.auth import _supabase_admin_headers
 from app.core.config import settings
+from app.main import database_exception_handler
+from sqlalchemy.exc import SQLAlchemyError
+from starlette.requests import Request
 
 
 def test_public_config_rejects_placeholder_supabase_values(client, monkeypatch):
@@ -49,6 +54,66 @@ def test_legacy_service_role_key_keeps_bearer_authorization(monkeypatch):
 
     assert headers['apikey'] == 'legacy-service-role-key'
     assert headers['Authorization'] == 'Bearer legacy-service-role-key'
+
+
+async def test_database_errors_return_service_unavailable_without_internal_details():
+    request = Request({
+        'type': 'http',
+        'method': 'GET',
+        'path': '/api/auth/me',
+        'headers': [],
+        'query_string': b'',
+        'server': ('test', 80),
+        'client': ('test', 1234),
+        'scheme': 'http',
+    })
+
+    response = await database_exception_handler(request, SQLAlchemyError('private database detail'))
+
+    assert response.status_code == 503
+    assert b'SERVICE_UNAVAILABLE' in response.body
+    assert b'private database detail' not in response.body
+
+
+def test_register_reports_supabase_network_failure(client, monkeypatch):
+    monkeypatch.setattr(settings, 'supabase_url', 'https://project.supabase.co')
+    monkeypatch.setattr(settings, 'supabase_anon_key', SecretStr('public-anon-key'))
+    monkeypatch.setattr(settings, 'supabase_service_role_key', SecretStr('sb_secret_test'))
+
+    class MockSession:
+        async def execute(self, query):
+            assert str(query) == 'SELECT 1 FROM public.users LIMIT 0'
+
+    async def mock_get_db():
+        yield MockSession()
+
+    class MockAsyncClient:
+        def __init__(self, timeout):
+            assert timeout == 15
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_):
+            return None
+
+        async def post(self, *_args, **_kwargs):
+            raise httpx.ConnectError('test connection failure')
+
+    monkeypatch.setitem(client.app.dependency_overrides, get_db, mock_get_db)
+    monkeypatch.setattr('app.api.routes.auth.httpx.AsyncClient', MockAsyncClient)
+
+    response = client.post('/api/auth/register', json={
+        'full_name': 'Test User',
+        'email': 'test@example.com',
+        'password': 'Correct-Horse-Battery-1',
+        'date_of_birth': '1990-01-01',
+        'role': 'patient',
+    })
+
+    assert response.status_code == 503
+    assert response.json()['error']['code'] == 'SERVICE_UNAVAILABLE'
+    assert 'account service' in response.json()['error']['message']
 
 
 async def test_gemini_live_token_is_single_use_and_configuration_is_locked(

@@ -1,8 +1,10 @@
 import pytest
-from datetime import date, timedelta
+from datetime import date, time, timedelta
+from types import SimpleNamespace
 
 from app.db.session import AsyncSessionLocal
 from sqlalchemy import text
+from app.api.routes.appointments import get_available_slots
 
 
 def _auth(token):
@@ -80,6 +82,59 @@ async def test_doctor_cannot_book_appointments(client, make_user):
         'time': '09:00',
     })
     assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_available_slots_returns_doctor_schedule(client, make_user):
+    doctor_id, _ = await make_user(role='doctor')
+    booking_date = _next_weekday(0)
+    await _add_availability(doctor_id, weekday=0)
+
+    response = client.get('/api/appointments/available-slots', params={
+        'doctor_id': doctor_id,
+        'date': booking_date.isoformat(),
+    })
+
+    assert response.status_code == 200, response.text
+    assert response.json()['slots'][:3] == ['09:00', '09:30', '10:00']
+
+
+@pytest.mark.asyncio
+async def test_available_slots_parses_public_date_query_without_database():
+    class Result:
+        def __init__(self, value):
+            self.value = value
+
+        def scalar_one_or_none(self):
+            return self.value
+
+        def scalars(self):
+            return self
+
+        def all(self):
+            return self.value
+
+    class FakeDatabase:
+        def __init__(self):
+            self.results = iter([
+                Result(SimpleNamespace(id=1)),
+                Result([SimpleNamespace(
+                    start_time=time(9, 0),
+                    end_time=time(10, 0),
+                    slot_minutes=30,
+                )]),
+                Result([]),
+            ])
+
+        async def execute(self, _statement):
+            return next(self.results)
+
+    response = await get_available_slots(
+        doctor_id='doctor-id',
+        appointment_date=_next_weekday(0).isoformat(),
+        db=FakeDatabase(),
+    )
+    assert response['slots'] == ['09:00', '09:30']
 
 
 def test_appointments_requires_auth(client):

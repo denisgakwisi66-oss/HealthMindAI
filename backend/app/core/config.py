@@ -73,16 +73,16 @@ class Settings(BaseSettings):
     smtp_host: str = Field('smtp.gmail.com')
 
     smtp_port: int = Field(587)
+    smtp_from: str = Field('no-reply@healthmind.ai')
+    resend_api_key: SecretStr = Field(SecretStr(''))
+    email_from: str = Field('')
     smtp_user: SecretStr = Field(SecretStr(''))
     smtp_password: SecretStr = Field(SecretStr(''))
-    smtp_from: str = Field('no-reply@healthmind.ai')
     use_tls: bool = Field(True)
 
-    # Where admin-facing notification emails go: emergency alerts, new
-    # appointments, appointment status changes, new registrations. One
-    # inbox for all operational notifications — MUST come from the
-    # environment, never be hard-coded in source.
-    emergency_recipient: str = Field('')
+    # One operational inbox for emergency, appointment, and medication alerts.
+    # Override it with EMERGENCY_RECIPIENT in each environment.
+    emergency_recipient: str = Field('denisgakwisi66@gmail.com')
 
     # Public URL of the application, used to build links inside emails.
     frontend_url: str = Field('http://localhost:8000')
@@ -122,7 +122,15 @@ class Settings(BaseSettings):
     def smtp_configured(self) -> bool:
         user = self.smtp_user.get_secret_value()
         password = self.smtp_password.get_secret_value()
-        return bool(user and password and user != 'your_email@gmail.com' and password != 'your_app_password')
+        placeholders = {'your_email@gmail.com', 'your_app_password', 'your_google_app_password'}
+        return bool(user and password and user not in placeholders and password not in placeholders)
+
+    @property
+    def email_delivery_configured(self) -> bool:
+        resend_configured = bool(
+            self.resend_api_key.get_secret_value() and self.email_from.strip()
+        )
+        return self.smtp_configured or resend_configured
 
     @property
     def ai_available(self) -> bool:

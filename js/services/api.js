@@ -106,13 +106,29 @@ const API = (() => {
   };
 
   const request = async (url, options = {}) => {
-    const fullUrl = url.startsWith('http') ? url : `${CONFIG.BASE_URL}${url}`;
-    const requestOptions = await requestInterceptor(options);
+    const requestUrl = new URL(
+      url.startsWith('http') ? url : `${CONFIG.BASE_URL}${url}`,
+      window.location.origin,
+    );
+    if (options.params) {
+      for (const [key, value] of Object.entries(options.params)) {
+        if (value === undefined || value === null) continue;
+        for (const item of Array.isArray(value) ? value : [value]) {
+          requestUrl.searchParams.append(key, String(item));
+        }
+      }
+    }
+    const { params: _params, timeout: _timeout, ...fetchOptions } = options;
+    const requestOptions = await requestInterceptor(fetchOptions);
 
     let lastError;
     for (let attempt = 0; attempt < CONFIG.RETRY_ATTEMPTS; attempt++) {
       try {
-        const response = await fetchWithTimeout(fullUrl, requestOptions, options.timeout || CONFIG.TIMEOUT);
+        const response = await fetchWithTimeout(
+          requestUrl.href,
+          requestOptions,
+          options.timeout || CONFIG.TIMEOUT,
+        );
         return await handleResponse(response);
       } catch (error) {
         lastError = error;

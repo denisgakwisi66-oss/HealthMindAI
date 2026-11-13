@@ -14,6 +14,7 @@ import Performance from './performance.js';
 import Security from './security.js';
 import Accessibility from './accessibility.js';
 import Toast, { showToast } from './toast.js';
+import I18n from './services/i18n.js';
 
 // ===== APP STATE =====
 
@@ -34,6 +35,8 @@ const App = (() => {
   const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1');
 
   const init = async () => {
+    I18n.init();
+
     // 1. Initialize security
     Security.init();
 
@@ -149,6 +152,13 @@ const App = (() => {
   // ===== GLOBAL LISTENERS =====
 
   const setupGlobalListeners = () => {
+    document.addEventListener('healthmind:languageerror', () => {
+      Toast.error(
+        I18n.translateText('Language'),
+        I18n.translateText('Could not save your language preference on this device.'),
+      );
+    });
+
     // Network status
     window.addEventListener('online', () => {
       Toast.success('Connection restored', 'You are back online.');

@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.database import get_db
 from app.core.audit import log_audit
+from app.core.config import settings
 from app.core.webhooks import emit_n8n_event
 from app.core.exceptions import ApiException, AuthorizationError, NotFoundError
 from app.models.medication import Medication
@@ -138,7 +139,14 @@ async def create_medication(
         'start_date': med.start_date.isoformat() if med.start_date else None,
         'end_date': med.end_date.isoformat() if med.end_date else None,
     })
-    return _medication_to_dict(med)
+    return {
+        **_medication_to_dict(med),
+        'reminder_email_configured': bool(
+            settings.email_notifications_enabled
+            and settings.emergency_recipient.strip()
+            and settings.email_delivery_configured
+        ),
+    }
 
 
 @router.put('/medications/{medication_id}')
@@ -192,6 +200,10 @@ async def delete_medication(
         raise NotFoundError('Medication not found.')
     if current_user.role == UserRole.PATIENT and med.patient_id != current_user.id:
         raise AuthorizationError('You can only delete your own medications.')
+    if current_user.role == UserRole.DOCTOR and not await _can_view(db, med, current_user):
+        raise AuthorizationError('You do not have access to this medication.')
+    if current_user.role not in (UserRole.PATIENT, UserRole.DOCTOR, UserRole.ADMIN):
+        raise AuthorizationError('You do not have permission to delete medications.')
     await db.delete(med)
     await db.commit()
     await log_audit(db, action='medication.delete', user_id=current_user.id,

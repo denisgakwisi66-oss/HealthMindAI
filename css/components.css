@@ -655,3 +655,29 @@
   .pulse-dot.danger {
     background-color: var(--color-danger);
   }
+
+  .app-language-control {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  .app-language-select {
+    width: auto;
+    min-width: 104px;
+    min-height: 40px;
+    padding: var(--spacing-2) var(--spacing-3);
+  }
+
+  @media (max-width: 480px) {
+    .app-language-control > span {
+      display: none;
+    }
+
+    .app-language-select {
+      min-width: 88px;
+      font-size: var(--font-size-xs);
+    }
+  }

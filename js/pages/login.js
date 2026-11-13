@@ -3,7 +3,7 @@ import App from '/js/app.js';
 import { showToast } from '/js/toast.js';
 
 const LoginPage = (() => {
-  const init = () => {
+  const init = async () => {
     const form = document.getElementById('login-form');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
@@ -14,6 +14,16 @@ const LoginPage = (() => {
     if (!form || !emailInput || !passwordInput || !loginBtn) {
       App.hideLoading();
       return;
+    }
+
+    try {
+      const isGoogleCallback = await AuthService.completeGoogleSignIn();
+      if (isGoogleCallback) {
+        App.hideLoading();
+        return;
+      }
+    } catch (error) {
+      App.handleError(error);
     }
 
     const clearErrors = () => {
@@ -91,17 +101,9 @@ const LoginPage = (() => {
           localStorage.removeItem('remember-email');
         }
 
-        const role = response.user?.role || 'patient';
-        let redirectUrl = '/dashboard.html';
-        if (role === 'doctor') {
-          redirectUrl = '/doctor-dashboard.html';
-        } else if (role === 'admin') {
-          redirectUrl = '/admin-dashboard.html';
-        }
-
         showToast('success', 'Welcome back!', `Hello, ${response.user?.full_name || 'User'}!`);
         setTimeout(() => {
-          window.location.href = redirectUrl;
+          window.location.href = AuthService.getDashboardPath(response.user);
         }, 500);
       } catch (error) {
         App.handleError(error);
@@ -121,11 +123,19 @@ const LoginPage = (() => {
       if (rememberMe) rememberMe.checked = true;
     }
 
-    document.getElementById('google-login')?.addEventListener('click', async () => {
+    const googleButton = document.getElementById('google-login');
+    googleButton?.addEventListener('click', async () => {
+      const originalContent = googleButton.innerHTML;
+      googleButton.disabled = true;
+      googleButton.setAttribute('aria-busy', 'true');
+      googleButton.innerHTML = '<div class="spinner spinner-sm"></div> Connecting...';
       try {
         await AuthService.loginWithGoogle();
       } catch (error) {
         App.handleError(error);
+        googleButton.disabled = false;
+        googleButton.removeAttribute('aria-busy');
+        googleButton.innerHTML = originalContent;
       }
     });
 

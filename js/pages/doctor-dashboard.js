@@ -10,6 +10,7 @@ import API from '/js/services/api.js';
 import Toast from '/js/toast.js';
 import { escapeText as esc } from '/js/security.js';
 import { requireRole } from '/js/utils/auth-guard.js';
+import I18n from '/js/services/i18n.js';
 
 const DoctorDashboard = (() => {
   // ===== STATE =====
@@ -40,6 +41,7 @@ const DoctorDashboard = (() => {
       // before this page script ran — re-calling it here without that
       // user object would blank out the sidebar's name/avatar.
       await loadDashboard();
+      document.addEventListener('healthmind:languagechange', updateScheduleDate);
 
       App.hideLoading();
 
@@ -64,18 +66,21 @@ const DoctorDashboard = (() => {
       renderSchedule();
       renderPatients();
 
-      // Update date
-      const today = new Date();
-      elements.scheduleDate.textContent = today.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric'
-      });
+      updateScheduleDate();
 
     } catch (error) {
       console.error('Error loading doctor dashboard:', error);
       Toast.error('Error', 'Failed to load dashboard data.');
     }
+  };
+
+  const updateScheduleDate = () => {
+    if (!elements.scheduleDate) return;
+    elements.scheduleDate.textContent = I18n.formatDate(new Date(), {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
   // ===== RENDER STATS =====

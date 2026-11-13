@@ -5,6 +5,7 @@
  */
 
 import { escapeText as esc } from './security.js';
+import Theme from './theme.js';
 
 const Navigation = (() => {
   // ===== NAVIGATION CONFIG =====
@@ -46,7 +47,7 @@ const Navigation = (() => {
     
     admin: [
       { path: '/admin-dashboard.html', label: 'Dashboard', icon: '📊', section: 'Main' },
-      { path: '/users.html', label: 'Users', icon: '👥', section: 'Main' },
+      { path: '/users.html', label: 'Users & Doctors', icon: '👥', section: 'Main' },
       { path: '/appointments.html', label: 'Appointments', icon: '📅', section: 'Management' },
       { path: '/analytics.html', label: 'Analytics', icon: '📈', section: 'Management' },
       { path: '/notifications.html', label: 'Notifications', icon: '🔔', section: 'Management' },
@@ -188,14 +189,7 @@ const Navigation = (() => {
     }
 
     // Setup theme toggle
-    const themeBtn = container.querySelector('.theme-toggle');
-    if (themeBtn) {
-      themeBtn.addEventListener('click', () => {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-        localStorage.setItem('theme', isDark ? 'light' : 'dark');
-      });
-    }
+    container.querySelector('.theme-toggle')?.addEventListener('click', Theme.toggle);
 
     // Setup logout
     const logoutBtn = container.querySelector('#logout-btn');

@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime, time, timedelta
 from typing import Any
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import func, select
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies.auth import get_current_user, require_roles
 from app.api.dependencies.database import get_db
+from app.core.exceptions import ApiException
 from app.models.appointment import Appointment, AppointmentStatus
 from app.models.audit_log import AuditLog
 from app.models.doctor import Doctor
@@ -75,6 +76,47 @@ async def dashboard_metrics(
     # No wearable/device metric source is connected; these are intentionally null
     # rather than fabricated values so the UI shows neutral placeholders.
     return {'heart_rate': None, 'blood_pressure': None, 'steps': None, 'sleep': None}
+
+
+@router.get('/admin/analytics')
+async def admin_analytics(
+    date_from: date | None = Query(default=None),
+    date_to: date | None = Query(default=None),
+    current_user: User = Depends(require_roles('admin')),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    end_date = date_to or datetime.utcnow().date()
+    start_date = date_from or (end_date - timedelta(days=30))
+    if start_date > end_date:
+        raise ApiException('VALIDATION_ERROR', 'Start date must be on or before end date.')
+
+    start = datetime.combine(start_date, time.min)
+    end = datetime.combine(end_date + timedelta(days=1), time.min)
+
+    user_rows = (await db.execute(
+        select(func.date(User.created_at), func.count())
+        .where(User.created_at >= start, User.created_at < end)
+        .group_by(func.date(User.created_at))
+        .order_by(func.date(User.created_at))
+    )).all()
+    appointment_rows = (await db.execute(
+        select(Appointment.date, func.count())
+        .where(Appointment.date >= start_date, Appointment.date <= end_date)
+        .group_by(Appointment.date)
+        .order_by(Appointment.date)
+    )).all()
+    role_rows = (await db.execute(
+        select(User.role, func.count()).group_by(User.role).order_by(User.role)
+    )).all()
+
+    return {
+        'date_from': start_date.isoformat(),
+        'date_to': end_date.isoformat(),
+        'users': [{'date': date.isoformat(), 'count': count} for date, count in user_rows],
+        'appointments': [{'date': date.isoformat(), 'count': count} for date, count in appointment_rows],
+        'roles': [{'role': role.value, 'count': count} for role, count in role_rows],
+        'medication_adherence': None,
+    }
 
 
 @router.get('/admin/dashboard')
@@ -175,3 +217,65 @@ async def doctor_dashboard(
         'today_appointments': today_appts,
         'recent_patients': recent_patients,
     }
+
+
+@router.get('/doctor/patients')
+async def doctor_patients(
+    search: str | None = None,
+    patient_id: str | None = None,
+    page: int = 1,
+    page_size: int = 50,
+    current_user: User = Depends(require_roles('doctor', 'admin')),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    query = select(User).where(User.role == UserRole.PATIENT)
+    latest_visit = select(
+        Appointment.patient_id,
+        func.max(Appointment.date).label('last_visit'),
+    ).group_by(Appointment.patient_id)
+
+    if current_user.role == UserRole.DOCTOR:
+        latest_visit = latest_visit.where(Appointment.doctor_id == current_user.id)
+        patients_with_access = select(Appointment.patient_id).where(
+            Appointment.doctor_id == current_user.id
+        )
+        query = query.where(User.id.in_(patients_with_access))
+    if patient_id:
+        query = query.where(User.id == patient_id)
+    if search:
+        term = f'%{search.strip()}%'
+        query = query.where(or_(User.full_name.ilike(term), User.email.ilike(term)))
+
+    total = (await db.execute(select(func.count()).select_from(query.subquery()))).scalar() or 0
+    page = max(1, page)
+    page_size = max(1, min(page_size, 100))
+    patients = (await db.execute(
+        query.order_by(User.full_name.asc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )).scalars().all()
+    patient_ids = [patient.id for patient in patients]
+    visits = {}
+    if patient_ids:
+        rows = (await db.execute(
+            select(latest_visit.c.patient_id, latest_visit.c.last_visit)
+            .where(latest_visit.c.patient_id.in_(patient_ids))
+        )).all()
+        visits = {user_id: visit for user_id, visit in rows}
+
+    today = datetime.utcnow().date()
+    result = []
+    for patient in patients:
+        age = None
+        if patient.date_of_birth:
+            age = today.year - patient.date_of_birth.year - (
+                (today.month, today.day) < (patient.date_of_birth.month, patient.date_of_birth.day)
+            )
+        result.append({
+            'id': str(patient.id),
+            'name': patient.full_name,
+            'age': age,
+            'last_visit': visits.get(patient.id).isoformat() if visits.get(patient.id) else None,
+        })
+
+    return {'patients': result, 'total': total, 'page': page, 'page_size': page_size}

@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -6,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from loguru import logger
+from sqlalchemy.exc import SQLAlchemyError
 from starlette.requests import Request
 from starlette.status import HTTP_422_UNPROCESSABLE_CONTENT
 
@@ -25,6 +28,7 @@ from app.api.routes.automation import router as automation_router
 from app.core.config import settings
 from app.core.exceptions import ApiException
 from app.core.logging import configure_logging
+from app.services.medication_reminders import run_medication_reminder_scheduler
 
 # Import models so Alembic (and anything introspecting metadata) sees every
 # table. Schema itself is owned by the Supabase SQL bootstrap + Alembic
@@ -34,7 +38,15 @@ import app.models  # noqa: F401
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    yield
+    reminder_task = asyncio.create_task(run_medication_reminder_scheduler())
+    try:
+        yield
+    finally:
+        reminder_task.cancel()
+        try:
+            await reminder_task
+        except asyncio.CancelledError:
+            pass
 
 
 def create_app() -> FastAPI:
@@ -132,6 +144,26 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
                 'code': 'VALIDATION_ERROR',
                 'message': 'Validation failed for the request.',
                 'details': details,
+            }
+        },
+    )
+
+
+@app.exception_handler(SQLAlchemyError)
+async def database_exception_handler(request: Request, exc: SQLAlchemyError) -> JSONResponse:
+    logger.error(
+        'Database request failed for {} {} ({})',
+        request.method,
+        request.url.path,
+        type(exc).__name__,
+    )
+    return JSONResponse(
+        status_code=503,
+        content={
+            'error': {
+                'code': 'SERVICE_UNAVAILABLE',
+                'message': 'The account database is temporarily unavailable. Please try again later.',
+                'details': None,
             }
         },
     )

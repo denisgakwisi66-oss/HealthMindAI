@@ -4,9 +4,11 @@ import Navigation from '/js/navigation.js';
 import Theme from '/js/theme.js';
 import API from '/js/services/api.js';
 import { escapeText as esc } from '/js/security.js';
+import I18n from '/js/services/i18n.js';
 
 const DashboardPage = (() => {
   let user = null;
+  let upcomingAppointments = [];
 
   const updateGreeting = () => {
     const name = user?.full_name || 'User';
@@ -68,6 +70,7 @@ const DashboardPage = (() => {
   };
 
   const renderUpcomingAppointment = (appointments) => {
+    upcomingAppointments = appointments || [];
     const container = document.getElementById('upcoming-appointment');
     if (!container) return;
 
@@ -83,7 +86,7 @@ const DashboardPage = (() => {
 
     const appt = appointments[0];
     const date = new Date(appt.date);
-    const formattedDate = date.toLocaleDateString('en-US', {
+    const formattedDate = I18n.formatDate(date, {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -257,6 +260,9 @@ const DashboardPage = (() => {
       await loadDashboardData();
 
       document.querySelector('.theme-toggle')?.addEventListener('click', Theme.toggle);
+      document.addEventListener('healthmind:languagechange', () => {
+        renderUpcomingAppointment(upcomingAppointments);
+      });
       App.hideLoading();
     } catch (error) {
       console.error('Error initializing dashboard page:', error);

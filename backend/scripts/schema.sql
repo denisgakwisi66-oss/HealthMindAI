@@ -3,7 +3,9 @@
 -- Mirrors the combined effect of every revision under
 -- backend/alembic/versions/ (currently: 54f7d5b94bf6 initial schema,
 -- a3cf387506ab role-sync-on-update trigger fix, d13194b83663
--- notification_emails table). This copy is for reference / pasting into
+-- notification_emails table, e8d47c1a2b90 medication email events,
+-- f17a9c3d6e42 medication schedule JSONB, a2c6e8f10345 medication reminder
+-- delivery log). This copy is for reference / pasting into
 -- the Supabase SQL Editor by hand; the source of truth for what's
 -- actually applied to a given database is Alembic (`alembic upgrade
 -- head` / `alembic current`), not this file — if you edit the schema,
@@ -97,7 +99,7 @@ create table if not exists public.medications (
   name text not null,
   dosage text,
   frequency text,
-  schedule text,
+  schedule jsonb,
   instructions text,
   start_date date,
   end_date date,
@@ -108,6 +110,28 @@ create table if not exists public.medications (
   updated_at timestamptz not null default now()
 );
 create index if not exists idx_medications_patient on public.medications(patient_id);
+
+-- ---------- medication reminder delivery log ----------
+create table if not exists public.medication_reminders (
+  id bigserial primary key,
+  medication_id bigint not null references public.medications(id) on delete cascade,
+  reminder_date date not null,
+  reminder_time text not null,
+  recipient text not null,
+  status text not null default 'processing'
+    check (status in ('processing','sent','failed')),
+  attempts integer not null default 1,
+  processing_at timestamp,
+  next_attempt_at timestamp,
+  sent_at timestamp,
+  error_detail text,
+  created_at timestamp not null default now(),
+  updated_at timestamp not null default now(),
+  constraint uq_medication_reminder_occurrence
+    unique (medication_id, reminder_date, reminder_time)
+);
+create index if not exists idx_medication_reminders_due
+  on public.medication_reminders(status, next_attempt_at);
 
 -- ---------- medical records ----------
 create table if not exists public.medical_records (
@@ -266,7 +290,7 @@ create table if not exists public.notification_emails (
   recipient text not null,
   subject text not null,
   event_type text not null
-    check (event_type in ('emergency_alert','appointment_created','appointment_status_changed','user_registered')),
+    check (event_type in ('emergency_alert','appointment_created','appointment_status_changed','user_registered','medication_created')),
   resource_type text,
   resource_id text,
   status text not null default 'sent' check (status in ('sent','failed')),
@@ -287,6 +311,7 @@ alter table public.doctors enable row level security;
 alter table public.availability enable row level security;
 alter table public.appointments enable row level security;
 alter table public.medications enable row level security;
+alter table public.medication_reminders enable row level security;
 alter table public.medical_records enable row level security;
 alter table public.notifications enable row level security;
 alter table public.ai_conversations enable row level security;

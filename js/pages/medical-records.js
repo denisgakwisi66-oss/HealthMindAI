@@ -10,6 +10,7 @@ import API from '/js/services/api.js';
 import { apiUrl } from '/js/services/api-url.js';
 import Toast from '/js/toast.js';
 import { escapeText as esc } from '/js/security.js';
+import I18n from '/js/services/i18n.js';
 
 const MedicalRecords = (() => {
   let records = [];
@@ -34,6 +35,7 @@ const MedicalRecords = (() => {
     try {
       $('.theme-toggle')?.addEventListener('click', Theme.toggle);
       bindEvents();
+      document.addEventListener('healthmind:languagechange', render);
       await loadRecords();
       App.hideLoading();
     } catch (error) {
@@ -98,7 +100,7 @@ const MedicalRecords = (() => {
   const formatDate = (iso) => {
     if (!iso) return '—';
     try {
-      return new Date(iso).toLocaleDateString(undefined, {
+      return I18n.formatDate(iso, {
         year: 'numeric',
         month: 'short',
         day: 'numeric',

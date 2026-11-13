@@ -10,6 +10,7 @@ import API from '/js/services/api.js';
 import Toast from '/js/toast.js';
 import { escapeText as esc } from '/js/security.js';
 import { requireRole } from '/js/utils/auth-guard.js';
+import I18n from '/js/services/i18n.js';
 
 const AdminDashboard = (() => {
   // ===== STATE =====
@@ -37,6 +38,7 @@ const AdminDashboard = (() => {
       // before this page script ran — re-calling it here without that
       // user object would blank out the sidebar's name/avatar.
       await loadDashboard();
+      document.addEventListener('healthmind:languagechange', renderActivity);
 
       App.hideLoading();
 
@@ -117,7 +119,7 @@ const AdminDashboard = (() => {
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
     
-    return date.toLocaleDateString();
+    return I18n.formatDate(date);
   };
 
   // ===== EVENT LISTENERS =====

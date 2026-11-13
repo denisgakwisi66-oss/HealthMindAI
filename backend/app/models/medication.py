@@ -3,9 +3,41 @@ from __future__ import annotations
 from datetime import datetime, date
 
 from sqlalchemy import Boolean, Column, DateTime, Date, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.types import TypeDecorator
 
 from app.db.base import Base
+
+
+class MedicationSchedule(TypeDecorator):
+    impl = JSONB
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None or isinstance(value, str):
+            return value
+        if isinstance(value, list):
+            return ','.join(str(item) for item in value)
+        if isinstance(value, dict):
+            times = value.get('times')
+            if isinstance(times, list):
+                return ','.join(str(item) for item in times)
+            if isinstance(value.get('time'), str):
+                return value['time']
+        return str(value)
+
+    def process_result_value(self, value, dialect):
+        if value is None or isinstance(value, str):
+            return value
+        if isinstance(value, list):
+            return ','.join(str(item) for item in value)
+        if isinstance(value, dict):
+            times = value.get('times')
+            if isinstance(times, list):
+                return ','.join(str(item) for item in times)
+            if isinstance(value.get('time'), str):
+                return value['time']
+        return str(value)
 
 
 class Medication(Base):
@@ -16,7 +48,7 @@ class Medication(Base):
     name = Column(String(255), nullable=False)
     dosage = Column(String(120), nullable=False)
     frequency = Column(String(120), nullable=False)
-    schedule = Column(String(255), nullable=True)  # comma-separated times e.g. "09:00,21:00"
+    schedule = Column(MedicationSchedule(), nullable=True)  # comma-separated times e.g. "09:00,21:00"
     instructions = Column(Text, nullable=True)
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)

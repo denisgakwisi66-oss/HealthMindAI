@@ -28,6 +28,7 @@ const Emergency = (() => {
     confirmBtn: document.getElementById('emergency-confirm-btn'),
     cancelBtn: document.getElementById('emergency-cancel'),
     successModal: document.getElementById('emergency-success'),
+    successMessage: document.getElementById('emergency-success-message'),
     okBtn: document.getElementById('emergency-ok'),
     savedContacts: document.getElementById('saved-contacts'),
     addContactBtn: document.getElementById('add-contact-btn'),
@@ -261,12 +262,19 @@ const Emergency = (() => {
         message: 'Emergency SOS triggered from the HealthMind AI app.',
       };
 
-      await API.post('/emergency/alert', payload);
+      const result = await API.post('/emergency/alert', payload);
 
       closeConfirmModal();
+      if (elements.successMessage) {
+        elements.successMessage.textContent = result.recipient
+          ? `Emergency email alert sent to ${result.recipient}.`
+          : 'Emergency email alert sent.';
+      }
       openSuccessModal();
       setStatus('Alert Sent', true);
-      Toast.success('Emergency alert sent', 'Your emergency alert has been sent.');
+      Toast.success('Emergency email sent', result.recipient
+        ? `Alert sent to ${result.recipient}. Call 112 directly for urgent help.`
+        : 'Your emergency alert email has been sent.');
     } catch (error) {
       console.error('Failed to send emergency alert:', error);
       closeConfirmModal();

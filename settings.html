@@ -89,16 +89,17 @@
             </form>
           </div>
 
-          <!-- Language -->
+          <!-- Application language -->
           <div class="card" style="margin-bottom: var(--spacing-6);">
-            <h3>🌐 Language</h3>
+            <h3>🌐 App Language</h3>
+            <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+              Change the language used across the HealthMind AI app. Your choice is saved on this device.
+            </p>
             <div class="input-group">
-              <select id="language-select" class="input-field">
+              <select id="language-select" data-app-language class="input-field" aria-label="App Language">
                 <option value="en">English</option>
-                <option value="es">Español</option>
                 <option value="fr">Français</option>
-                <option value="de">Deutsch</option>
-                <option value="zh">中文</option>
+                <option value="rw">Kinyarwanda</option>
               </select>
             </div>
           </div>

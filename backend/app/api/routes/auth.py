@@ -7,6 +7,7 @@ import httpx
 from fastapi import APIRouter, Depends, Request
 from loguru import logger
 from pydantic import BaseModel, EmailStr, Field, field_validator
+from sqlalchemy import text
 
 from app.api.dependencies.auth import get_current_user, user_to_dict
 from app.api.dependencies.database import get_db
@@ -72,7 +73,10 @@ def _parse_dob(value: str | None) -> date | None:
 
 
 @auth_router.post('/register', dependencies=[Depends(rate_limit(settings.rate_limit_per_minute))])
-async def register(payload: RegisterRequest) -> dict[str, str]:
+async def register(
+    payload: RegisterRequest,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, str]:
     """Create an account via Supabase's Admin API with `email_confirm: true`
     set explicitly, so account creation never depends on the project's
     dashboard-level "Confirm email" setting. The public.users (+
@@ -88,22 +92,32 @@ async def register(payload: RegisterRequest) -> dict[str, str]:
             'Account creation is not configured. Set valid Supabase URL, anon key, and service-role key in backend/.env.'
         )
 
-    async with httpx.AsyncClient(timeout=15) as client:
-        resp = await client.post(
-            f'{settings.supabase_url}/auth/v1/admin/users',
-            headers=_supabase_admin_headers(),
-            json={
-                'email': payload.email,
-                'password': payload.password,
-                'email_confirm': True,
-                'user_metadata': {
-                    'full_name': payload.full_name,
-                    'phone': payload.phone,
-                    'date_of_birth': payload.date_of_birth,
-                    'role': payload.role,
+    # Do not create an Auth identity if the profile database is unavailable:
+    # the frontend cannot complete sign-in without the corresponding profile.
+    await db.execute(text('SELECT 1 FROM public.users LIMIT 0'))
+
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.post(
+                f'{settings.supabase_url}/auth/v1/admin/users',
+                headers=_supabase_admin_headers(),
+                json={
+                    'email': payload.email,
+                    'password': payload.password,
+                    'email_confirm': True,
+                    'user_metadata': {
+                        'full_name': payload.full_name,
+                        'phone': payload.phone,
+                        'date_of_birth': payload.date_of_birth,
+                        'role': payload.role,
+                    },
                 },
-            },
-        )
+            )
+    except httpx.HTTPError as exc:
+        logger.warning('Supabase Auth account creation request failed: {}', type(exc).__name__)
+        raise ServiceUnavailableError(
+            'Could not reach the account service. Please try again later.'
+        ) from exc
 
     if 'already been registered' in resp.text.lower():
         raise ApiException('EMAIL_ALREADY_REGISTERED', 'An account with this email already exists.')

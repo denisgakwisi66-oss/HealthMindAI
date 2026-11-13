@@ -8,6 +8,11 @@ frontend, served together from the same process.
 - **Frontend**: plain HTML/CSS/JS under `js/` and `css/`, served as static
   files by the backend — no build step. `js/services/auth.js` talks to
   Supabase Auth directly; `js/services/api.js` talks to this backend's `/api`.
+- **Languages**: English, French, and Kinyarwanda are available from the
+  app's language selector. The choice is saved on the device and applies to
+  the current page, shared navigation, and interface elements rendered later.
+  Patient-entered content and AI-generated answers are not rewritten by the
+  interface translator.
 - **Voice assistant**: React/TypeScript source in `js/voice-assistant.tsx`;
   run `npm install` and `npm run build:voice` from the repository root after
   checkout. It uses Gemini Live with backend-minted, short-lived tokens; see
@@ -63,6 +68,8 @@ create a Blueprint from `render.yaml`. Enter the required database, Supabase,
 and Gemini values in Render's secret prompts; never commit them or paste them
 into chat. Render assigns an HTTPS `onrender.com` URL after deployment. Use
 that exact URL as `HEALTHMIND_API_URL` when syncing the Capacitor projects.
+Apply database changes with `python -m alembic upgrade head` from the backend
+directory before testing newly added features.
 
 This is only a test configuration: free web services can sleep, free Key
 Value data is not persistent, and Render does not provide free background
@@ -82,7 +89,19 @@ restore testing for your requirements before enabling patient uploads.
 A production deployment also needs an appropriate paid, reliable compute and
 background-worker plan. Render's free tier can sleep, lacks persistent
 Key Value data, and blocks outbound SMTP ports used by the default
-email-alert configuration; it is only suitable for fake-data testing.
+email-alert configuration. For email on Render's free tier, configure a
+Resend API key as `RESEND_API_KEY` and a verified sender as `EMAIL_FROM` in
+the Render service environment. Emergency, appointment, and medication
+notifications are sent to `denisgakwisi66@gmail.com`; without an email
+provider and verified sender, delivery is not available. This free setup is
+only suitable for fake-data testing.
+
+The FastAPI service checks active medication schedules every 15 seconds using
+Africa/Kigali time and sends a reminder email at the scheduled time, with a
+five-minute catch-up window and retry attempts if email delivery fails. Apply
+the database migrations through `a2c6e8f10345` for the reminder delivery log
+before starting the updated service. This scheduler is part of the web service;
+it does not depend on a browser tab or the n8n Cron workflow.
 
 Microphone access for the Gemini voice assistant is requested by the app at
 runtime. Android and iOS native projects include a user-facing microphone
